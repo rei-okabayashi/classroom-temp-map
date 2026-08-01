@@ -1,0 +1,11 @@
+# ビルド生成物
+build/
+*.bin
+*.elf
+*.map
+
+# エディタ・OSごみ
+.vscode/
+.DS_Store
+Thumbs.db
+desktop.ini
