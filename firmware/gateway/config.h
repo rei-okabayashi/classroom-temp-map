@@ -10,7 +10,7 @@
 #define NODE_COUNT 4
 static const char *NODE_IDS[NODE_COUNT] = {"n1", "n2", "n3", "n4"};
 
-// 校正オフセット[℃]（8/21の並走校正で決めた値を入れる。表示にのみ適用。
+// 校正オフセット[℃]（8/25の並走校正で決めた値を入れる。表示にのみ適用。
 // SDのCSVには生値を記録する＝生データを汚さない）
 static const float CAL_OFFSET_T[NODE_COUNT] = {0.0f, 0.0f, 0.0f, 0.0f};
 
