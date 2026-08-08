@@ -9,3 +9,8 @@ build/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# 実測データと分析生成物（SDから回収したCSVとSQLite DBはコミットしない）
+analysis/LOG.CSV
+analysis/onmura.db
+onmura.db

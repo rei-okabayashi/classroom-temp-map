@@ -178,13 +178,22 @@ static void pollSerialTime() {
       pos = 0;
       int Y, M, D, hh, mm, ss;
       if (sscanf(buf, "TIME %d-%d-%d %d:%d:%d", &Y, &M, &D, &hh, &mm, &ss) == 6) {
-        struct tm tmv = {};
-        tmv.tm_year = Y - 1900; tmv.tm_mon = M - 1; tmv.tm_mday = D;
-        tmv.tm_hour = hh; tmv.tm_min = mm; tmv.tm_sec = ss;
-        struct timeval tv = { mktime(&tmv), 0 };
-        settimeofday(&tv, nullptr);
-        clockSet = true;
-        Serial.println("clock set OK");
+        // 打ち間違い対策: 範囲外の値は時計を変更せず拒否する
+        // （誤った値がclock=setとしてCSVに残ると、時刻未設定より発見が難しいため）
+        if (Y < 2025 || Y > 2035 || M < 1 || M > 12 || D < 1 || D > 31 ||
+            hh < 0 || hh > 23 || mm < 0 || mm > 59 || ss < 0 || ss > 59) {
+          Serial.println("NG: 値が範囲外です。 usage: TIME 2026-08-17 09:00:00");
+        } else {
+          struct tm tmv = {};
+          tmv.tm_year = Y - 1900; tmv.tm_mon = M - 1; tmv.tm_mday = D;
+          tmv.tm_hour = hh; tmv.tm_min = mm; tmv.tm_sec = ss;
+          struct timeval tv = { mktime(&tmv), 0 };
+          settimeofday(&tv, nullptr);
+          clockSet = true;
+          char ts[24];
+          nowString(ts, sizeof(ts));
+          Serial.printf("clock set OK: %s\n", ts);  // 設定結果を読み返す（日付間違いに即気づけるように）
+        }
       } else if (buf[0] != '\0') {
         Serial.println("usage: TIME 2026-08-17 09:00:00");
       }

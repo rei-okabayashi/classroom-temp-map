@@ -28,7 +28,8 @@ def load(csv_path: Path, include_unset: bool) -> sqlite3.Connection:
              recv_time TEXT, clock TEXT, node_id TEXT, seq INTEGER,
              temp_c REAL, hum_pct REAL, status TEXT)"""
     )
-    kept = skipped = 0
+    kept = skipped = dup = 0
+    last_seq: dict[str, str] = {}  # ノード別の直前採用seq（再送由来の連続重複を除く）
     with open(csv_path, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         missing = [c for c in COLUMNS if c not in (reader.fieldnames or [])]
@@ -41,6 +42,13 @@ def load(csv_path: Path, include_unset: bool) -> sqlite3.Connection:
             if row["clock"] != "set" and not include_unset:
                 skipped += 1
                 continue
+            # 送達確認のACKだけが失われた場合、ノードは同じseqをもう一度送る（契約の1回再送）。
+            # そのとき集約は同一(node_id, seq)を2行記録するので、直前と同じseqだけ捨てる。
+            # ノード再起動でseqは0に戻るが、その場合は直前のseqと一致しないので誤って落とさない。
+            if last_seq.get(row["node_id"]) == row["seq"]:
+                dup += 1
+                continue
+            last_seq[row["node_id"]] = row["seq"]
             con.execute(
                 "INSERT INTO readings VALUES (?,?,?,?,?,?,?)",
                 (row["recv_time"], row["clock"], row["node_id"], int(row["seq"]),
@@ -48,7 +56,7 @@ def load(csv_path: Path, include_unset: bool) -> sqlite3.Connection:
             )
             kept += 1
     con.commit()
-    print(f"取り込み: {kept}行（除外: {skipped}行 = sensor_err / 時刻未設定）")
+    print(f"取り込み: {kept}行（除外: {skipped}行 = sensor_err / 時刻未設定、再送重複: {dup}行）")
     return con
 
 

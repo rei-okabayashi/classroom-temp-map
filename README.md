@@ -74,8 +74,8 @@ classroom-temp-map/
 ノードと集約M5Stackの間の約束事は [docs/data-contract.md](docs/data-contract.md) に定義しています。要点だけ書くと：
 
 - 30秒に1回、ESP-NOW（ユニキャスト・チャンネル1固定・暗号化なし）でJSONを送信。送達確認NGなら1秒後に1回だけ再送。
-- ペイロード例：`{"v":1,"id":"n1","seq":123,"t":26.4,"h":55.2}`（読み取り失敗時は`t`/`h`の代わりに`err:"sensor"`）。
-- 集約側はSDカードの `LOG.CSV` に生値のまま1行ごとフラッシュで記録（列：`recv_time,clock,node_id,seq,temp_c,hum_pct,status`）。校正補正は表示・分析時に適用する。
+- ペイロード例：`{"v":1,"id":"n1","seq":123,"t":26.4,"h":55.2}`（読み取り失敗時は`t`/`h`の代わりに`"err":"sensor"`を送る）。
+- 集約側はSDカードの `LOG.CSV` に生値のまま1行ごとフラッシュで記録（列：`recv_time,clock,node_id,seq,temp_c,hum_pct,status`）。校正補正は画面表示にのみ適用（分析時に適用するかは未決定→docs/backlog.md 項目4）。
 
 ## チームの決めごと
 
@@ -130,7 +130,7 @@ classroom-temp-map/
 ## 機材と費用
 
 - センサーノード一式（秋月電子で発注済み・2026-08-01）：¥13,110
-- microSDカード（KIOXIA KCA-MC016GS 16GB）：約¥900
+- microSDカード（LAZOS 16GB Class10）：約¥1,000
 - 機材は企画者が用意。プロジェクト終了後（9月の発表・運用終了後）に譲渡（センサーノードのみ。集約のM5Stackは対象外）を希望するメンバーは実費¥3,500/台
 
 ## AI活用の記録
