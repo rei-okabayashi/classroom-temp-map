@@ -8,7 +8,7 @@
 
 Day 0当日にメンバーがpushできる状態にしておくための前提。
 
-- [x] GitHub上にリモートリポジトリ `classroom-temp-map`（public）を作成する。→ 2026-08-08作成済み: https://github.com/nerunerunerure-hue/classroom-temp-map
+- [x] GitHub上にリモートリポジトリ `classroom-temp-map`（public）を作成する。→ 2026-08-08作成済み: https://github.com/rei-okabayashi/classroom-temp-map
 - [ ] メンバー全員をCollaboratorとして招待する。
 - [ ] 各自のローカルに `git clone` させる（または事前宿題側でやらせる）。
 - [ ] Discordサーバーを作成し、招待リンクを用意する。

@@ -138,7 +138,7 @@ M5Stack Basic は製造時期によって、USB通信用のチップが **CH9102
 4. リポジトリを置きたい場所（例：`ドキュメント` フォルダ）に移動してから、以下のように clone する。
 
    ```
-   git clone https://github.com/nerunerunerure-hue/classroom-temp-map.git
+   git clone https://github.com/rei-okabayashi/classroom-temp-map.git
    ```
 
 5. clone が終わったら、VSCode の `ファイル`（File）→ `フォルダーを開く`（Open Folder）で、clone してできた `classroom-temp-map` フォルダを開く。
