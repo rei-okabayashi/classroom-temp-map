@@ -51,6 +51,7 @@ classroom-temp-map/
 │   ├── data-contract.md      # ノード⇄集約の通信・データ形式の約束事
 │   ├── setup-windows.md      # 開発環境セットアップ手順（Windows）
 │   ├── day0-agenda.md        # Day 0（初回）の進め方
+│   ├── afterschool-plan.md   # 放課後1時間の時間割と週ごとのゴール
 │   ├── git-primer.md         # Git素振りメニュー＆チーム用チートシート
 │   ├── tasks-initial.md      # 初期タスク一覧（Issue登録用の台帳）
 │   ├── backlog.md            # 拡張バックログ（前倒し時にこの順で着手）
@@ -72,6 +73,7 @@ classroom-temp-map/
 
 - 環境構築 → [docs/setup-windows.md](docs/setup-windows.md)
 - Day 0当日の進め方 → [docs/day0-agenda.md](docs/day0-agenda.md)
+- 放課後の時間割と週ごとのゴール → [docs/afterschool-plan.md](docs/afterschool-plan.md)
 
 ## データ契約
 
