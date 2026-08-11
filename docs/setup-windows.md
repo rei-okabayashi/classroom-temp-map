@@ -79,6 +79,8 @@ IT経験がなくても、上から順番にやれば完了する粒度で書い
 ## 2. ボードマネージャーURLの追加 → esp32パッケージ 3.3.11 のインストール
 
 1. Arduino IDE を開き、左上メニューの `ファイル`（File）→ `基本設定`（Preferences）を開きます（ショートカット `Ctrl+,` でも可）。
+
+   ![Fileメニューを開いたところ。下の方の「Preferences...」（基本設定）を選びます](images/setup-windows/02-file-menu.png)
 2. 「追加のボードマネージャのURL」（Additional boards manager URLs）の欄に、以下のURLを貼り付けます。
 
    ```
@@ -88,8 +90,14 @@ IT経験がなくても、上から順番にやれば完了する粒度で書い
    すでに他のURLが入っている場合は、改行またはカンマ区切りで追記します（上書きしないでください）。
 
 3. 「OK」をクリックして設定画面を閉じます。
+
+   ![Preferences画面。下部の「Additional boards manager URLs」欄にURLを貼り付けて、OKを押します](images/setup-windows/02-preferences-url.png)
 4. 左側の縦アイコンの中から「ボードマネージャ」（Boards Manager、四角が積み重なったアイコン）をクリックします。
 5. 検索欄に `esp32` と入力すると、「**esp32 by Espressif Systems**」が出てきます。
+
+   ![ボードマネージャの検索欄にesp32と入力し、esp32 by Espressif Systemsのバージョンを3.3.11にしてボタンを押します](images/setup-windows/02-boards-manager.png)
+
+   ※画像は撮影した環境に導入済みのため「UPDATE」表示ですが、初めてのインストールでは「INSTALL」と表示されます（押すボタンの位置は同じです）。
 6. バージョン選択のドロップダウンから **3.3.11** を選び、「インストール」（Install）をクリックします。
 
    **これは数百MB〜1GB以上のダウンロードになるため、環境によっては10〜30分ほどかかります。** インストール中はPCの電源とネット接続を切らないでください。途中で止まっているように見えても、進捗バーが動いていれば待ってOKです。
@@ -131,6 +139,10 @@ M5Stack Basic は製造時期によって、USB通信用のチップが **CH9102
 1. Arduino IDE の左側の縦アイコンから「ライブラリマネージャ」（本のアイコン）を開きます。
 2. 検索欄に `M5Unified` と入力します。
 3. 「**M5Unified** by M5Stack」を選び、「インストール」をクリックします。
+
+   ![ライブラリマネージャの検索欄にM5Unifiedと入力し、M5Unified by M5Stackをインストールします](images/setup-windows/04-library-m5unified.png)
+
+   ※画像は撮影した環境に導入済みのため「UPDATE」表示ですが、初めてのインストールでは「INSTALL」と表示されます。
 4. 依存ライブラリ（M5GFXなど）を一緒にインストールするか聞かれたら「Install All」を選びます（M5UnifiedはM5GFXに依存しており、自動で入ります）。
 5. インストール完了後、ライブラリ一覧に `M5Unified` が表示されていればOKです。
 
@@ -202,9 +214,13 @@ Day 0で初めて `git push` を実行すると、一度だけブラウザが自
 
 1. **Arduino IDE** を開きます（VSCodeではなくArduino IDEを使います）。
 2. `ファイル`（File）→ `開く`（Open...）で、clone した `classroom-temp-map` フォルダの中の `firmware/node-template/node-template.ino` を開きます。
+
+   ![node-template.inoを開いた直後の画面。タブにnode-template.inoとconfig.hが並んでいればOKです](images/setup-windows/06-node-template-open.png)
 3. 上部メニューの `ツール`（Tools）→ `ボード`（Board）→ `esp32` の中から「**ESP32 Dev Module**」を選択します。
 4. 画面左上のチェックマークのアイコン（検証/コンパイル）をクリックします。
-5. 下側の出力ウィンドウに赤いエラーが出ず、最後に「コンパイルが完了しました」（Done compiling）「スケッチが使用しているプログラム領域は...」のようなメッセージが出れば成功です。
+5. 下側の出力ウィンドウに赤いエラーが出ず、最後に「コンパイルが完了しました」（Done compiling）「スケッチが使用しているプログラム領域は...」のようなメッセージが出れば成功です（英語表示の場合は `Sketch uses ... bytes` の2行です）。
+
+   ![左上のチェックマークが検証（コンパイル）ボタン。下の出力にSketch uses ...の2行が出てエラーが無ければ成功です](images/setup-windows/06-compile-success.png)
 
 初回はコンパイルに数分かかることがあります（手順8のトラブルシュートも参照してください）。
 
@@ -222,6 +238,10 @@ Day 0で初めて `git push` を実行すると、一度だけブラウザが自
 
 1. ESP32-DevKitC-32E をUSBケーブルでPCに接続します（手順3-1のドライバが入っている状態です）。
 2. `ツール`（Tools）→ `シリアルポート`（Port）から、手順3-1でメモした `COMx` を選択します。
+
+   ![画面上部のボード名の右にある▼を開くと、COMポートの候補が一覧で出ます](images/setup-windows/07-port-select.png)
+
+   ※画面上部のボード名右の▼からも選べます。ボード名が「Unknown」と表示されても、手順3-1でメモしたCOM番号と一致していればそれを選んで問題ありません。
 3. 画面左上の右矢印アイコン（マイコンボードに書き込む／Upload）をクリックします。
 4. 出力ウィンドウに `Hard resetting via RTS pin...` や `Leaving...` のようなメッセージが出て、赤いエラーなく終われば書き込み成功です（うまくいかない場合は手順8の表を参照してください）。
 5. `ツール`（Tools）→ `シリアルモニタ`（Serial Monitor）を開きます（虫眼鏡アイコン、または `Ctrl+Shift+M`）。
