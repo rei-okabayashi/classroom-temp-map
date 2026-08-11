@@ -61,7 +61,7 @@ classroom-temp-map/
 │   ├── log_to_sqlite.py      # LOG.CSV→SQLite取り込み＋基本集計（標準ライブラリのみ）
 │   ├── README.md             # 分析担当の作業手順
 │   └── sample/LOG.CSV        # 動作確認用ダミーデータ
-├── day0/                     # Day 0のGit演習で各自が作る自己紹介ファイル置き場（演習時に作成）
+├── day0/                     # Git演習（8/18）で各自が作る自己紹介ファイル置き場（演習時に作成）
 ├── .github/
 │   ├── ISSUE_TEMPLATE/task.md
 │   └── pull_request_template.md
@@ -70,7 +70,7 @@ classroom-temp-map/
 
 ## はじめかた
 
-開発環境の準備は事前宿題です（Day 0は放課後45〜60分しかないため、当日はGit演習と役割の確認から始めます。実機の動作確認は8/17週の放課後に順次進めます→[docs/tasks-initial.md](docs/tasks-initial.md) のM2）。
+開発環境の準備は、**自宅PC分が事前宿題**です。**学校PC分はDay 0（8/17）の残り時間と8/18（火）の放課後にチームで導入します**。Day 0当日は役割の合意と機材配布が中心で、Git演習は8/18に行います（実機の動作確認は8/17週の放課後に順次進めます→[docs/tasks-initial.md](docs/tasks-initial.md) のM2）。
 
 - 環境構築 → [docs/setup-windows.md](docs/setup-windows.md)
 - Day 0当日の進め方 → [docs/day0-agenda.md](docs/day0-agenda.md)
