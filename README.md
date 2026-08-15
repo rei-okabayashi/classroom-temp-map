@@ -56,7 +56,8 @@ classroom-temp-map/
 │   ├── git-primer.md         # Git素振りメニュー＆チーム用チートシート
 │   ├── tasks-initial.md      # 初期タスク一覧（Issue登録用の台帳）
 │   ├── backlog.md            # 拡張バックログ（前倒し時にこの順で着手）
-│   └── presentation-outline.md  # 校内発表の構成案
+│   ├── presentation-outline.md  # 校内発表の構成案
+│   └── scope-cut-order.md    # 完成が危ういときに削る順序（8/28・9/2の判断基準）
 ├── analysis/
 │   ├── log_to_sqlite.py      # LOG.CSV→SQLite取り込み＋基本集計（標準ライブラリのみ）
 │   ├── README.md             # 分析担当の作業手順
@@ -112,7 +113,7 @@ GitHub（書いたプログラムの変更履歴を記録・共有できるWeb�
 - 金曜: 中間デモ（8/21・8/28）です。進捗の判定はこの場でだけ行います。9/4(金)は完成デモ＋ふりかえり（KPT）です
 - 詰まったら24時間以内に申告してください→企画者と30分ペア作業します。遅れは責めません（タスクの切り方が悪かったとみなして分解し直します）
 - 時間の上限は週5〜8hです。上限は超えません（作業量は役割ごとに波がありますが、上限と見える化で揃えます）
-- 完成が危うくなったら、あらかじめ決めた順に規模を削ります（順序は [docs/backlog.md](docs/backlog.md) 参照）
+- 完成が危うくなったら、あらかじめ決めた順に規模を削ります（順序は [docs/scope-cut-order.md](docs/scope-cut-order.md) 参照）
 
 ## 役割分担表
 
