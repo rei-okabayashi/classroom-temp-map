@@ -12,6 +12,10 @@ static const char *NODE_IDS[NODE_COUNT] = {"n1", "n2", "n3", "n4"};
 
 // 校正オフセット[℃]（8/25の並走校正で決めた値を入れる。表示にのみ適用。
 // SDのCSVには生値を記録する＝生データを汚さない）
+//
+// 並び順は上の NODE_IDS と同じ。左から n1, n2, n3, n4 の順に対応する。
+// 数値の末尾の f は「小数として扱う」という印なので消さないこと。
+//                                            n1     n2     n3     n4
 static const float CAL_OFFSET_T[NODE_COUNT] = {0.0f, 0.0f, 0.0f, 0.0f};
 
 #define LOG_PATH   "/LOG.CSV"         // SDカード上のログ（1受信=1行追記）
