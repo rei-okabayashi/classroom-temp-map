@@ -16,6 +16,7 @@
 #include <WiFi.h>
 #include <esp_now.h>
 #include <esp_wifi.h>
+#include <esp_mac.h>
 #include <Wire.h>
 #include "config.h"
 
@@ -106,8 +107,14 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
   esp_wifi_set_channel(WIFI_CHANNEL, WIFI_SECOND_CHAN_NONE);
-  Serial.print("my MAC: ");
-  Serial.println(WiFi.macAddress());
+  // MACはチップのeFuseから直接読む（WiFi.macAddress() は arduino-esp32 3.3.x だと
+  // 00:00:00:00:00:00 を返すことがあり、2026-08-16の実機で実際にゼロになった）。
+  {
+    uint8_t mac[6];
+    esp_read_mac(mac, ESP_MAC_WIFI_STA);
+    Serial.printf("my MAC: %02X:%02X:%02X:%02X:%02X:%02X\n",
+                  mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+  }
 
   // ありがちな設定忘れを起動時に警告（GATEWAY_MACが初期値のまま）
   bool macZero = true;

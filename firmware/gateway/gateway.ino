@@ -22,6 +22,7 @@
 #include <WiFi.h>
 #include <esp_now.h>
 #include <esp_wifi.h>
+#include <esp_mac.h>
 #include <time.h>
 #include <sys/time.h>
 #include "config.h"
@@ -302,7 +303,18 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
   esp_wifi_set_channel(WIFI_CHANNEL, WIFI_SECOND_CHAN_NONE);
-  myMac = WiFi.macAddress();
+  // MACはチップのeFuseから直接読む。
+  // WiFi.macAddress() は arduino-esp32 3.3.x だと 00:00:00:00:00:00 を返すことがあり、
+  // 2026-08-16のM5Stack Basic実機（core 3.3.11）で実際にゼロになった。
+  // esp_read_mac(ESP_MAC_WIFI_STA) はWiFiの起動状態に関係なく実値を返す。
+  {
+    uint8_t mac[6];
+    esp_read_mac(mac, ESP_MAC_WIFI_STA);
+    char buf[18];
+    snprintf(buf, sizeof(buf), "%02X:%02X:%02X:%02X:%02X:%02X",
+             mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    myMac = String(buf);
+  }
   Serial.printf("=== onmura gateway ===\nMAC: %s\n", myMac.c_str());
   Serial.println("時刻設定: TIME 2026-08-17 09:00:00 のように送信");
 
