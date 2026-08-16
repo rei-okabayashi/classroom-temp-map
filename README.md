@@ -69,13 +69,23 @@ classroom-temp-map/
 └── .gitignore
 ```
 
-## はじめかた
+## はじめかた — どの資料を、いつ読むか
 
-開発環境の準備は、**自宅PC分が事前宿題**です。**学校PC分はDay 0（8/17）の残り時間と8/18（火）の放課後にチームで導入します**。Day 0当日は役割の合意と機材配布が中心で、Git演習は8/18に行います（実機の動作確認は8/17週の放課後に順次進めます→[docs/tasks-initial.md](docs/tasks-initial.md) のM2）。
+開発環境の準備は、**自宅PC分が事前宿題**です。**学校PC分はDay 0（8/17）の残り時間と8/18（火）・8/20（木）の放課後にチームで導入します**。Day 0当日は役割の合意と機材配布が中心で、Git演習は8/18に行います（実機の動作確認は8/17週の放課後に順次進めます→[docs/tasks-initial.md](docs/tasks-initial.md) のM2）。
 
-- 環境構築 → [docs/setup-windows.md](docs/setup-windows.md)
-- Day 0当日の進め方 → [docs/day0-agenda.md](docs/day0-agenda.md)
-- 放課後の時間割と週ごとのゴール → [docs/afterschool-plan.md](docs/afterschool-plan.md)
+資料は多めにありますが、**全部読む必要はありません**。下の表の、いまの自分に当てはまる行だけ読めば大丈夫です。
+
+| いつ・誰が | 読むもの | 補足 |
+|---|---|---|
+| いま（事前宿題） | [docs/setup-windows.md](docs/setup-windows.md)・[docs/setup-discord.md](docs/setup-discord.md) | 済んだ人は読み直し不要です |
+| 8/18のGit演習まで | [docs/git-primer.md](docs/git-primer.md) の**第2部だけ** | 第1部は企画者の練習用です（読まなくてOK） |
+| 放課後の流れを知りたいとき | [docs/afterschool-plan.md](docs/afterschool-plan.md) | 1回ざっと見れば十分です |
+| 自分の役割が決まったら | [docs/roles.md](docs/roles.md) の自分の行、[docs/tasks-initial.md](docs/tasks-initial.md) の自分のタスク | 他の人の分は読まなくてOKです |
+| 自分のノードを作るとき | [docs/data-contract.md](docs/data-contract.md)・[docs/first-boot-check.md](docs/first-boot-check.md) のA章 | ノード担当全員（8/17週〜） |
+| データ分析をするとき | [analysis/README.md](analysis/README.md) | 分析担当向けです |
+
+**次の5つは、ふだん読まなくていい資料です**（必要な場面になったら企画者が案内します）：
+[docs/day0-agenda.md](docs/day0-agenda.md)（Day 0の進行台本。当日は企画者が進めます）／[docs/task-cards.md](docs/task-cards.md)（Issueの見かたに迷ったとき用）／[docs/backlog.md](docs/backlog.md)（前倒しできたときの追加機能）／[docs/presentation-outline.md](docs/presentation-outline.md)（3週目の発表準備で使います）／[docs/scope-cut-order.md](docs/scope-cut-order.md)（完成が危ういときだけ）
 
 ## データ契約
 
