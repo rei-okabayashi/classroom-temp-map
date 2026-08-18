@@ -375,7 +375,7 @@ Gitに「誰の変更か」を教えるための設定です。これをして�
 | 学校PCで clone や push が時間切れ（timeout系のエラー）で失敗する | Git にプロキシが設定されていない | 5章の手順4（学校PCのみ：Gitにもプロキシを設定します）を実行してください |
 | push で Authentication failed / Permission denied になる | 招待の未承諾、または別アカウントで認証している | 5章の「リポジトリへの招待を受け取る」の承諾を確認してください。ブラウザの認証画面では0章で作ったアカウントでログインしてください |
 | `git status` などで `fatal: not a git repository` と出る | 開いているフォルダがcloneしたものではない（ZIPで展開したフォルダや別の場所。見た目が同じでも、履歴を持つ `.git` が無いとGitでは使えません） | 「ファイル」→「フォルダーを開く」で5章でcloneした `classroom-temp-map` を開き直してください。cloneがまだなら5章を実施してください |
-| `git push` しても `Everything up-to-date` と出る／PRに変更が反映されない | 変更がまだcommitに入っていない（未保存、またはadd・commit漏れ。pushが送るのは「commit」だけです） | ①保存（Ctrl+S）→②`git status` で赤い表示を確認→③`git add <ファイル>`→④`git commit -m "..."`（出力の追加行数が0でないこと）→⑤`git push` の順でやり直してください | 5章の「リポジトリへの招待を受け取る」の承諾を確認してください。ブラウザの認証画面では0章で作ったアカウントでログインしてください |
+| `git push` しても `Everything up-to-date` と出る／PRに変更が反映されない | 変更がまだcommitに入っていない（未保存、またはadd・commit漏れ。pushが送るのは「commit」だけです） | ①保存（Ctrl+S）→②`git status` で赤い表示を確認→③`git add <ファイル>`→④`git commit -m "..."`（出力の追加行数が0でないこと）→⑤`git push` の順でやり直してください |
 
 ---
 
