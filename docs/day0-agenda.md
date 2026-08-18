@@ -168,7 +168,7 @@ git branch -d day0/<handle>
 - `git switch -c` を忘れてmainのまま作業 → 手順どおりならpushで `src refspec ... does not match any` と出て止まります。`git branch` の声かけで早めに確認。mainでcommitしてしまっていたら git-primer.md 第2部「mainに直接commitしてしまった」の手順で退避します。
 - commitしたのに中身が空（`0 insertions`）→ 保存（Ctrl+S）忘れ。保存→add→commit→pushをやり直します。
 - push時の認証エラー → 招待のAcceptとプロキシ設定（setup-windows.md 5章）を確認します。
-- 
+
 ## 4. Day 0完了条件チェックリスト
 
 Day 0（8/17）の完了条件：
