@@ -105,48 +105,70 @@
 
 ## 3. Git一周演習の手順（実施は8/18(火)。Day 0では企画者が画面で流れを見せるだけです）
 
-目的は、`day0/<自分のハンドル>.md` を新規作成して自己紹介を1行書き、ブランチ作成→commit→push→PR作成→企画者レビュー→マージ、を全員が1周することです。
+目的は、`day0/<自分のハンドル>.md` を新規作成して自己紹介を1行書き、ブランチ作成→commit→push→PR作成→企画者レビュー→マージ→mainに取り込み、を全員が1周することです。
 
-`<handle>` は各自のGitHubユーザー名など、他の人と被らない短い文字列に置き換えてください。
+### 準備（コピペを始める前に、全員そろって確認）
 
-以下のコマンドを順番に実行します（各行の `#` はコメントで、それぞれ何をしているかの説明です）。
+1. ターミナルを開き、タブ名が「powershell」（プロンプトが `PS C:\...>` の形）であることを確認します。「cmd」になっていたら、ターミナル右上「＋」の隣の「∨」→「既定のプロファイルの選択」→「PowerShell」を選び、もう一度新しいターミナルを開きます。
+2. `git status` と打って「On branch main」が出ることを確認します。`fatal: not a git repository` と出たら、開いているフォルダがcloneしたものではありません（setup-windows.md 8章参照）。
+3. この章の `<handle>` は自分のGitHubユーザー名に置き換えてから実行します。**この章のコマンド全体をVSCodeの新規ファイル（無題のままでOK）に貼り、Ctrl+H で `<handle>` を自分のユーザー名に一括置換し、そこから1行ずつコピペしてください。** 置換せずに実行すると `<` の記号のせいでエラーになります。ユーザー名は半角で（全角でもエラーにならず、変な名前のブランチができてしまいます）。
 
-```bash
-# 1. リポジトリの最新化（ローカルにclone済みの前提）
-git checkout main
+### 前半：作業用ブランチを作る
+
+```
+git switch main
 git pull
+git switch -c day0/<handle>
+git branch
+```
 
-# 2. 自分用のブランチを作る
-git checkout -b day0/<handle>
+最後の `git branch` で `day0/<handle>` の行に `*` が付いていればOKです（1行目で「Already on 'main'」と出るのは正常です）。
 
-# 3. ファイルを作る（VSCodeで day0/<handle>.md を新規作成し、自己紹介を1行書いて保存）
-#    例: 「n1担当の◯◯です。よろしくお願いします。」
-#    ★day0フォルダはまだ存在しません。VSCode左側のエクスプローラーで
-#      classroom-temp-map のフォルダを右クリック →「新しいファイル」を選び、
-#      ファイル名の欄に day0/<handle>.md とスラッシュ込みで入力すると、
-#      day0フォルダごと自動で作られます。
+### ファイルを作る（ここはコマンドではなくVSCodeの操作です）
 
-# 4. 変更をステージしてコミット
+day0フォルダには企画者の見本 `rei-okabayashi.md` が既に入っています。エクスプローラーで **day0フォルダを右クリック**→「新しいファイル」→ `<handle>.md` という名前で作成し、見本にならって自己紹介を1行書いて、**Ctrl+S で保存**します。例：「n1担当の◯◯です。よろしくお願いします。」
+
+### 後半：commitしてpushする
+
+```
+git status
 git add day0/<handle>.md
+git status
 git commit -m "day0: <handle>の自己紹介を追加"
-
-# 5. リモートにpush
 git push -u origin day0/<handle>
 ```
 
-続けてブラウザ側の操作：
+- 1回目の `git status` では新しいファイルが赤（Untracked）、`git add` 後の2回目では緑（to be committed）で表示されます。
+- commitの出力の「1 file changed, **1 insertion(+)**」を必ず見てください。**0 insertions なら保存を忘れています**。ファイルを保存して、add→commitをやり直せば大丈夫です（同じブランチに積み直すだけ。作り直しは不要です）。
+- 初回のpushでは一度だけブラウザが開き、GitHubへのサインインと許可を求められます（setup-windows.md 5章「初回pushでは認証画面が出る」のとおり進めてください）。
 
-1. push後にターミナル（コマンドを文字で打ち込むための画面）へ出るURL（またはGitHub上のリポジトリページ）を開き、「Compare & pull request」からPRを作成します。
-2. PRの説明欄（`.github/pull_request_template.md` のテンプレート）に沿って、やったことを一言書きます。
-3. 企画者がレビューして、問題なければ「Approve」→マージボタンでマージします。
-4. マージされたら演習は完了です。
+### ブラウザ側の操作
+
+1. push後にターミナルへ表示されるURL（`https://github.com/.../pull/new/day0/<handle>`）をCtrl+クリックで開くと、そのままPR作成フォームが開きます。リポジトリのページから行く場合は、黄色い「Compare & pull request」ボタンでも同じ画面に行けます。
+2. base（取り込み先）が `main`、compare が `day0/<handle>` になっていることを確認します。
+3. 説明欄には `.github/pull_request_template.md` の3項目が自動で入っています。「このコードは何をする？」にやったことを一言、「動作確認したこと」はチェックを付けず「ドキュメントのみのため該当なし」と書いて、「Create pull request」で作成します。
+4. 企画者がレビューして、問題なければ「Approve」→「Merge pull request」でマージします（修正の指摘があったときは、直して保存→add→commit→pushすれば同じPRに自動で反映されます）。
+
+### 仕上げ：mainに戻って取り込む（ここまでで一周です）
+
+自分のPRがマージされたら：
+
+```
+git switch main
+git pull
+git log --oneline -5
+git branch -d day0/<handle>
+```
+
+`day0/` に自分の（そして先にマージされた人の）ファイルが入っていて、logに自分のコミットと「Merge pull request」が見えれば完走です。最後の `branch -d` はマージ済みのブランチだけ消せる安全な削除で、これが通ること自体が取り込み完了の証明です。
 
 つまずきやすい点（企画者が机間巡回で見るポイント）：
 
-- `git checkout -b` を忘れてmainのまま作業してしまう → ブランチ名を都度声かけで確認します。
-- `git push` 時にリモートが無い／認証エラー → 事前準備（0章）でclone・認証が済んでいるか確認します。
-- PRのターゲットブランチが `main` になっているか確認します。
-
+- `<handle>` を置換せずに実行 →「The '<' operator is reserved for future use.」等のエラー。準備3の一括置換からやり直します。
+- `git switch -c` を忘れてmainのまま作業 → 手順どおりならpushで `src refspec ... does not match any` と出て止まります。`git branch` の声かけで早めに確認。mainでcommitしてしまっていたら git-primer.md 第2部「mainに直接commitしてしまった」の手順で退避します。
+- commitしたのに中身が空（`0 insertions`）→ 保存（Ctrl+S）忘れ。保存→add→commit→pushをやり直します。
+- push時の認証エラー → 招待のAcceptとプロキシ設定（setup-windows.md 5章）を確認します。
+- 
 ## 4. Day 0完了条件チェックリスト
 
 Day 0（8/17）の完了条件：
