@@ -78,7 +78,8 @@ classroom-temp-map/
 | いつ・誰が | 読むもの | 補足 |
 |---|---|---|
 | いま（事前宿題） | [docs/setup-windows.md](docs/setup-windows.md)・[docs/setup-discord.md](docs/setup-discord.md) | 済んだ人は読み直し不要です |
-| 8/18のGit演習まで | [docs/git-primer.md](docs/git-primer.md) の**第2部だけ** | 第1部は企画者の練習用です（読まなくてOK） |
+| 環境構築（setup-windows.mdの5章まで）が終わったら | [docs/git-primer.md](docs/git-primer.md) の**第1部** | 練習用リポジトリでの「ひとり素振り」です（目安90分。終わった人から順にやればOKです） |
+| 8/18のGit演習まで | [docs/git-primer.md](docs/git-primer.md) の**第2部** | チーム作業のチートシートです。演習のあとも手元に置いて使います |
 | 放課後の流れを知りたいとき | [docs/afterschool-plan.md](docs/afterschool-plan.md) | 1回ざっと見れば十分です |
 | 自分の役割が決まったら | [docs/roles.md](docs/roles.md) の自分の行、[docs/tasks-initial.md](docs/tasks-initial.md) の自分のタスク | 他の人の分は読まなくてOKです |
 | 自分のノードを作るとき | [docs/data-contract.md](docs/data-contract.md)・[docs/first-boot-check.md](docs/first-boot-check.md) のA章 | ノード担当全員（8/17週〜） |
