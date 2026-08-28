@@ -45,6 +45,10 @@ struct NodeState {
 };
 static NodeState nodes[NODE_COUNT];
 
+// ---- グラフ表示用
+const int MAX_SCREENS = 5;
+int screenMode = 0;
+
 static bool     clockSet  = false;  // TIMEコマンドで時刻設定済みか
 static bool     sdOk      = false;
 static uint32_t dropCount = 0;      // 解釈できなかった受信の数
@@ -204,10 +208,34 @@ static void pollSerialTime() {
   }
 }
 
+// --- Change screen(画面切り替え)
+static void drawScreen(int s_mode) {
+  // Implemented using a "switch" to accommodate the potential additinal screen in the future
+  // 将来的にスクリーンを追加する可能性に備え、switch文で実装 
+  switch(s_mode) {
+    case 0:
+      drawScreen_0();
+      break;
+
+    default:
+      drawScreen_node(s_mode);
+      break;
+  }
+}
+
+// --- Draw Graph for each node (working) / 各ノードのグラフ作成用(作業中)
+static void drawScreen_node(int node) {
+  M5.Display.clear();
+
+  M5.Display.fillScreen(BLUE);
+  M5.Display.setTextColor(WHITE);
+  M5.Display.printf("Display: %d\n", node);
+}
+
 // ---- 画面描画（1秒ごと）----
 // スプライト(メモリ上の下書き)が確保できればちらつきゼロで描く。
 // Basic(PSRAM無し)で確保に失敗したときは画面へ直接描く(多少ちらつくが動く)。
-static void drawScreen() {
+static void drawScreen_0() {
   lgfx::LovyanGFX &g = spriteOk ? static_cast<lgfx::LovyanGFX &>(canvas)
                                 : static_cast<lgfx::LovyanGFX &>(M5.Display);
   g.fillRect(0, 0, 320, 240, TFT_BLACK);
@@ -336,11 +364,20 @@ void loop() {
     qTail = (qTail + 1) % QUEUE_SIZE;
   }
 
+  // ボタンが押されたかどうかでscreenMode値変更
+  if (M5.BtnA.wasPressed()) {
+    screenMode++;
+    if (screenMode >= MAX_SCREENS) {
+      screenMode = 0;
+    }
+  }
+
   // 1秒ごとに画面更新
   static uint32_t lastDraw = 0;
   if (millis() - lastDraw >= 1000) {
     lastDraw = millis();
-    drawScreen();
+    // drawScreen(0);
+    drawScreen(screenMode);
   }
   delay(10);
 }
