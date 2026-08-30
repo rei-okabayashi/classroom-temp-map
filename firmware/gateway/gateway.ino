@@ -229,16 +229,6 @@ static void pollSerialTime() {
   }
 }
 
-// --- Draw Graph for each node (working) / 各ノードのグラフ作成用(作業中)
-static void drawScreen_node(int idx) {
-  M5.Display.fillScreen(BLUE);
-
-  M5.Display.setTextSize(2);
-  M5.Display.setTextColor(WHITE);
-  M5.Display.setCursor(10, 10);
-  
-  M5.Display.printf("Graph: %s\n", NODE_IDS[idx]);
-}
 
 // ---- 画面描画（1秒ごと）----
 // スプライト(メモリ上の下書き)が確保できればちらつきゼロで描く。
@@ -314,6 +304,41 @@ static void drawScreen_list() {
 
   if (spriteOk) canvas.pushSprite(0, 0);
 }
+
+
+
+
+// --- Draw Graph for each node (working) / 各ノードのグラフ作成用(作業中)
+static void drawScreen_node(int idx) {
+  lgfx::LovyanGFX &g = spriteOk ? static_cast<lgfx::LovyanGFX &>(canvas)
+                                : static_cast<lgfx::LovyanGFX &>(M5.Display);
+  
+  // Draw background
+  g.fillRect(0, 0, 320, 240, TFT_BLACK);
+
+  // Title settings
+  g.setTextSize(2);
+  g.setTextColor(TFT_WHITE);
+  g.setCursor(10, 10);
+  
+  g.printf("Graph: %s\n", NODE_IDS[idx]);
+
+  // Draw the outer frame(axes) of the graph
+  // Draw a frame spanning the full width of the screen with a width of 320px and a height ranging from 40px to 220px (180px high)
+  // g.drawRect(10, 40, 300, 160, TFT_DARKGREY); 
+  g.drawFastHLine(10, 40,  300, TFT_DARKGREY); // 上の水平線 (X=10から横幅300)
+  g.drawFastHLine(10, 200, 300, TFT_DARKGREY); // 下の水平線 (X=10から横幅300)
+  g.drawFastVLine(10, 40,  170, TFT_DARKGREY); // 左の垂直線 (Y=40から縦幅160)
+  g.drawFastVLine(310, 40, 170, TFT_DARKGREY); // 右の垂直線 (Y=40から縦幅160)
+
+
+  if (spriteOk) {
+    canvas.pushSprite(0, 0);
+  }
+}
+
+
+
 
 void setup() {
   auto cfg = M5.config();
