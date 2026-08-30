@@ -30,6 +30,7 @@
 // ---- 受信キュー（コールバック内で重い処理をしないための受け渡し箱）----
 #define QUEUE_SIZE 8
 #define PKT_MAX    256   // ESP-NOWの上限250バイト+終端に収まるサイズ
+#define HISTORY_SIZE 360 // Size of ring buffers which have temperature and humidity
 static char queueBuf[QUEUE_SIZE][PKT_MAX];
 static volatile int qHead = 0;  // コールバック(書く側)が進める
 static volatile int qTail = 0;  // loop(読む側)が進める
@@ -45,9 +46,13 @@ struct NodeState {
 };
 static NodeState nodes[NODE_COUNT];
 
-// ---- グラフ表示用
-const int MAX_SCREENS = 5;
+// ---- For drawing graphes (グラフ表示用)
+const int MAX_SCREENS = 1 + NODE_COUNT;
 int screenMode = 0;
+static float nodeTempRingBuffer[NODE_COUNT][HISTORY_SIZE] = {0.0f};
+static float nodeHumidRingBuffer[NODE_COUNT][HISTORY_SIZE] = {0.0f};
+static int write_index[NODE_COUNT] = {0};
+static bool historyFull[NODE_COUNT] = {false};
 
 static bool     clockSet  = false;  // TIMEコマンドで時刻設定済みか
 static bool     sdOk      = false;
@@ -57,7 +62,9 @@ static bool     spriteOk = false;  // Basic(PSRAM無し)ではスプライト確
 static String   myMac;
 
 // ---- ESP-NOW受信コールバック（コピーだけして即返す）----
-void onRecv(const esp_now_recv_info_t *info, const uint8_t *data, int len) {
+//void onRecv(const esp_now_recv_info_t *info, const uint8_t *data, int len) {  // for ESP32 core version 3.x after
+void onRecv(const uint8_t *mac, const uint8_t *data, int len) {   // for ESP32 core version 2.x
+
   int next = (qHead + 1) % QUEUE_SIZE;
   if (next == qTail) return;                 // キューが満杯なら捨てる
   if (len <= 0 || len >= PKT_MAX) return;    // 長すぎるものも捨てる
@@ -155,7 +162,21 @@ static void handlePacket(const char *json) {
   nodes[idx].lastMs    = millis();
   nodes[idx].seq       = seq;
   nodes[idx].sensorErr = isErr;
-  if (!isErr) { nodes[idx].t = t; nodes[idx].h = h; }
+  if (!isErr) { 
+    nodes[idx].t = t; 
+    nodes[idx].h = h; 
+
+    // Add t & h in ring buffer (リングバッファにt, hのデータを追加)
+    nodeTempRingBuffer[idx][write_index[idx]] = t;
+    nodeHumidRingBuffer[idx][write_index[idx]] = h;
+    write_index[idx]++;
+
+    if (write_index[idx] >= HISTORY_SIZE) {
+      write_index[idx] = 0;
+      historyFull[idx] = true;
+    }
+
+  }
 
   // CSV追記（契約: recv_time,clock,node_id,seq,temp_c,hum_pct,status）
   char ts[24];
@@ -208,34 +229,21 @@ static void pollSerialTime() {
   }
 }
 
-// --- Change screen(画面切り替え)
-static void drawScreen(int s_mode) {
-  // Implemented using a "switch" to accommodate the potential additinal screen in the future
-  // 将来的にスクリーンを追加する可能性に備え、switch文で実装 
-  switch(s_mode) {
-    case 0:
-      drawScreen_0();
-      break;
-
-    default:
-      drawScreen_node(s_mode);
-      break;
-  }
-}
-
 // --- Draw Graph for each node (working) / 各ノードのグラフ作成用(作業中)
-static void drawScreen_node(int node) {
-  M5.Display.clear();
-
+static void drawScreen_node(int idx) {
   M5.Display.fillScreen(BLUE);
+
+  M5.Display.setTextSize(2);
   M5.Display.setTextColor(WHITE);
-  M5.Display.printf("Display: %d\n", node);
+  M5.Display.setCursor(10, 10);
+  
+  M5.Display.printf("Graph: %s\n", NODE_IDS[idx]);
 }
 
 // ---- 画面描画（1秒ごと）----
 // スプライト(メモリ上の下書き)が確保できればちらつきゼロで描く。
 // Basic(PSRAM無し)で確保に失敗したときは画面へ直接描く(多少ちらつくが動く)。
-static void drawScreen_0() {
+static void drawScreen_list() {
   lgfx::LovyanGFX &g = spriteOk ? static_cast<lgfx::LovyanGFX &>(canvas)
                                 : static_cast<lgfx::LovyanGFX &>(M5.Display);
   g.fillRect(0, 0, 320, 240, TFT_BLACK);
@@ -364,20 +372,37 @@ void loop() {
     qTail = (qTail + 1) % QUEUE_SIZE;
   }
 
+  // Change the screenMode value based on whether the button is pressed
   // ボタンが押されたかどうかでscreenMode値変更
+  static uint32_t lastBtnMs = 0;
+
   if (M5.BtnA.wasPressed()) {
-    screenMode++;
-    if (screenMode >= MAX_SCREENS) {
-      screenMode = 0;
+    uint32_t nowMs = millis();
+
+    // 前回の判定から200m秒以上たっていない場合は無視(チャタリング防止)
+    // Ignore if less than 200 milliseconds have elapsed since the previous determination (simple debouncing)
+    if (nowMs - lastBtnMs >= 200) {
+      lastBtnMs = nowMs;
+
+      screenMode++;
+      if (screenMode >= MAX_SCREENS) {
+        screenMode = 0;
+      }
     }
+
   }
 
   // 1秒ごとに画面更新
   static uint32_t lastDraw = 0;
   if (millis() - lastDraw >= 1000) {
     lastDraw = millis();
-    // drawScreen(0);
-    drawScreen(screenMode);
+    
+    if (screenMode == 0) {
+      drawScreen_list();    // List view(一覧表示)
+    } else {
+      drawScreen_node(screenMode - 1);   // Graph view(グラフ表示)
+    }
+    
   }
   delay(10);
 }
