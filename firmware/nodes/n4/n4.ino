@@ -145,6 +145,8 @@ void loop() {
   char json[128];
   float t, h;
 
+
+  //温度にしきい値をもうけ、もしあり得ない値を取得した際に「無効な値」などと表示するのはどうでしょう。
   if (readSensor(t, h)) {
     // 正常時: {"v":1,"id":"n1","seq":123,"t":26.4,"h":55.2}
     snprintf(json, sizeof(json),
