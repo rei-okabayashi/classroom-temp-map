@@ -30,7 +30,7 @@
 // ---- 受信キュー（コールバック内で重い処理をしないための受け渡し箱）----
 #define QUEUE_SIZE 8
 #define PKT_MAX    256   // ESP-NOWの上限250バイト+終端に収まるサイズ
-#define HISTORY_SIZE 360 // Size of ring buffers which have temperature and humidity
+#define HISTORY_SIZE 360 // Size of ring buffers which have temperature and humidity(Three hours' data)
 static char queueBuf[QUEUE_SIZE][PKT_MAX];
 static volatile int qHead = 0;  // コールバック(書く側)が進める
 static volatile int qTail = 0;  // loop(読む側)が進める
@@ -312,6 +312,20 @@ static void drawScreen_list() {
 static void drawScreen_node(int idx) {
   lgfx::LovyanGFX &g = spriteOk ? static_cast<lgfx::LovyanGFX &>(canvas)
                                 : static_cast<lgfx::LovyanGFX &>(M5.Display);
+
+  // (0,0) 左上
+  // |
+  // +-- (10, 10) ➔ ここに「Graph: n1」の文字が描かれる（文字の高さは約16px）
+  // |
+  // +-- (40, 40) --------------------------- (310, 40)  ← 上の水平線
+  // |            |                         |
+  // |            |                         |
+  // |            |  Graph Area             |
+  // |            |  (Height: 160px)        |
+  // |            |                         |
+  // +-- (40,200) --------------------------- (310,200)  ← 下の水平線
+  //              ↑                         ↑
+  //           左の垂直線                右の垂直線                              
   
   // Draw background
   g.fillRect(0, 0, 320, 240, TFT_BLACK);
@@ -324,12 +338,97 @@ static void drawScreen_node(int idx) {
   g.printf("Graph: %s\n", NODE_IDS[idx]);
 
   // Draw the outer frame(axes) of the graph
-  // Draw a frame spanning the full width of the screen with a width of 320px and a height ranging from 40px to 220px (180px high)
+  // Draw Outer frame (top edge 40, bottom edge 200, left edge 10, right edge 310) 
   // g.drawRect(10, 40, 300, 160, TFT_DARKGREY); 
-  g.drawFastHLine(10, 40,  300, TFT_DARKGREY); // 上の水平線 (X=10から横幅300)
-  g.drawFastHLine(10, 200, 300, TFT_DARKGREY); // 下の水平線 (X=10から横幅300)
-  g.drawFastVLine(10, 40,  170, TFT_DARKGREY); // 左の垂直線 (Y=40から縦幅160)
-  g.drawFastVLine(310, 40, 170, TFT_DARKGREY); // 右の垂直線 (Y=40から縦幅160)
+  g.drawFastHLine(40, 40,  270, TFT_DARKGREY); // 上の水平線 (X=40から横幅270)
+  g.drawFastHLine(40, 200, 270, TFT_DARKGREY); // 下の水平線 (X=40から横幅270)
+  g.drawFastVLine(40, 40,  160, TFT_DARKGREY); // 左の垂直線 (Y=40から縦幅160)
+  g.drawFastVLine(310, 40, 160, TFT_DARKGREY); // 右の垂直線 (Y=40から縦幅160)
+  // Draw center line
+  g.drawFastVLine(175, 40, 160, TFT_DARKGREY);
+
+  // Draw the tick marks (numbers) on the vertical axis
+  // 縦軸のグラフのメモリを書く
+  g.setTextSize(1);
+  g.setCursor(20, 40-6);
+  g.printf("40 C");
+
+  g.setCursor(20, 120-4);
+  g.printf("25");
+
+  g.setCursor(20, 200-4);
+  g.printf("20");
+
+  // Draw the tick marks (numbers) on the horizontal axis
+  // 横軸のグラフのメモリを描く
+  g.setCursor(40, 200 + 8);
+  g.printf("0h");
+
+  g.setCursor(160, 200 + 8);
+  g.printf("1.5h");
+
+  g.setCursor(290, 200 + 8);
+  g.printf("3h");
+
+
+  // --- Draw the line graph ---  
+  int prev_x = 0, prev_y = 0;   // previous x, y
+
+  // When the ring buffer is not full yet(リングバッファ内のデータがfullではないとき)
+  if (historyFull[idx] == false) {     
+    for (int i = 0; i < write_index[idx]; i++) {
+      // x-coordinate (x座標)
+      int x = 40 + (i * 270) / HISTORY_SIZE;
+
+      // y-coordinate (y座標)
+      float temp = nodeTempRingBuffer[idx][i];
+      if (temp == 0.0f) continue;   // If the data is still empty (0.0), skip the rendering for this loop
+      int y = 200 - (int)( (temp - 10.0f) * 160.0f / (40.0f - 10.0f) );
+
+      // Force data falling outside the range to fit within the graph's boundaries (40–200)
+      // 範囲外のデータを、グラフの枠内（40〜200）に強制的に閉じ込める
+      y = constrain(y, 40, 200); 
+
+      // plot and draw line
+      g.drawPixel(x, y, TFT_WHITE);
+      if (i != 0) {
+        g.drawLine(prev_x, prev_y, x, y, TFT_WHITE);
+      }
+
+      prev_x = x;
+      prev_y = y;
+    }
+  } 
+  // When the ring buffer is full(リングバッファ内のデータがfullのとき)
+  else {
+    int rb_idx = write_index[idx];
+
+    for (int i = 0; i < HISTORY_SIZE; i++) {
+      // x-coordinate (x座標)
+      int x = 40 + (i * 270) / HISTORY_SIZE;
+
+      // y-coordinate (y座標)
+      float temp = nodeTempRingBuffer[idx][rb_idx];
+      if (temp == 0.0f) continue;  // If the data is still empty (0.0), skip the rendering for this loop 
+      int y = 200 - (int)( (temp - 10.0f) * 160.0f / (40.0f - 10.0f) );
+
+      // Force data falling outside the range to fit within the graph's boundaries (40–200)
+      // 範囲外のデータを、グラフの枠内（40〜200）に強制的に閉じ込める
+      y = constrain(y, 40, 200); 
+
+      // plot and draw line
+      g.drawPixel(x, y, TFT_WHITE);
+      if (i != 0) {
+        g.drawLine(prev_x, prev_y, x, y, TFT_WHITE);
+      }
+
+      prev_x = x;
+      prev_y = y;
+
+      // next index (配列の次のindex)
+      rb_idx = (rb_idx + 1) % HISTORY_SIZE;
+    }
+  }
 
 
   if (spriteOk) {
