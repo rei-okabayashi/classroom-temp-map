@@ -30,6 +30,9 @@
 // ---- 受信キュー（コールバック内で重い処理をしないための受け渡し箱）----
 #define QUEUE_SIZE 8
 #define PKT_MAX    256   // ESP-NOWの上限250バイト+終端に収まるサイズ
+#define HISTORY_SIZE 360 // Size of ring buffers which have temperature and humidity(Three hours' data)
+#define Y_MAX 34  // Maximum value of the y-axis(y軸の最大値)
+#define Y_MIN 18  // Minimum value of the y-axis(y軸の最小値)
 static char queueBuf[QUEUE_SIZE][PKT_MAX];
 static volatile int qHead = 0;  // コールバック(書く側)が進める
 static volatile int qTail = 0;  // loop(読む側)が進める
@@ -45,6 +48,14 @@ struct NodeState {
 };
 static NodeState nodes[NODE_COUNT];
 
+// ---- For drawing graphes (グラフ表示用)
+const int MAX_SCREENS = 1 + NODE_COUNT;
+int screenMode = 0;
+static float nodeTempRingBuffer[NODE_COUNT][HISTORY_SIZE] = {0.0f};
+static float nodeHumidRingBuffer[NODE_COUNT][HISTORY_SIZE] = {0.0f};
+static int write_index[NODE_COUNT] = {0};
+static bool historyFull[NODE_COUNT] = {false};
+
 static bool     clockSet  = false;  // TIMEコマンドで時刻設定済みか
 static bool     sdOk      = false;
 static uint32_t dropCount = 0;      // 解釈できなかった受信の数
@@ -53,7 +64,9 @@ static bool     spriteOk = false;  // Basic(PSRAM無し)ではスプライト確
 static String   myMac;
 
 // ---- ESP-NOW受信コールバック（コピーだけして即返す）----
-void onRecv(const esp_now_recv_info_t *info, const uint8_t *data, int len) {
+//void onRecv(const esp_now_recv_info_t *info, const uint8_t *data, int len) {  // for ESP32 core version 3.x after
+void onRecv(const uint8_t *mac, const uint8_t *data, int len) {   // for ESP32 core version 2.x
+
   int next = (qHead + 1) % QUEUE_SIZE;
   if (next == qTail) return;                 // キューが満杯なら捨てる
   if (len <= 0 || len >= PKT_MAX) return;    // 長すぎるものも捨てる
@@ -151,7 +164,30 @@ static void handlePacket(const char *json) {
   nodes[idx].lastMs    = millis();
   nodes[idx].seq       = seq;
   nodes[idx].sensorErr = isErr;
-  if (!isErr) { nodes[idx].t = t; nodes[idx].h = h; }
+
+  if (!isErr) { 
+    nodes[idx].t = t; 
+    nodes[idx].h = h; 
+  }
+
+  // If the data is valid, set the temperature and humidity,
+  // if there is an error, set 0.0f
+  float target_t = isErr ? 0.0f : (t + CAL_OFFSET_T[idx]);
+  float target_h = isErr ? 0.0f : h;
+
+  // Add t & h in ring buffer (リングバッファにt, hのデータを追加)
+  nodeTempRingBuffer[idx][write_index[idx]] = target_t;
+  nodeHumidRingBuffer[idx][write_index[idx]] = target_h;
+
+  // Increment idx of the ring buffer. When it reaches the limit(HISTORY_SIZE 360),
+  // reset it to 0 and set the historyFull flag
+  write_index[idx]++;
+
+  if (write_index[idx] >= HISTORY_SIZE) {
+    write_index[idx] = 0;
+    historyFull[idx] = true;
+  }
+
 
   // CSV追記（契約: recv_time,clock,node_id,seq,temp_c,hum_pct,status）
   char ts[24];
@@ -204,10 +240,11 @@ static void pollSerialTime() {
   }
 }
 
+
 // ---- 画面描画（1秒ごと）----
 // スプライト(メモリ上の下書き)が確保できればちらつきゼロで描く。
 // Basic(PSRAM無し)で確保に失敗したときは画面へ直接描く(多少ちらつくが動く)。
-static void drawScreen() {
+static void drawScreen_list() {
   lgfx::LovyanGFX &g = spriteOk ? static_cast<lgfx::LovyanGFX &>(canvas)
                                 : static_cast<lgfx::LovyanGFX &>(M5.Display);
   g.fillRect(0, 0, 320, 240, TFT_BLACK);
@@ -279,6 +316,132 @@ static void drawScreen() {
   if (spriteOk) canvas.pushSprite(0, 0);
 }
 
+
+
+
+// --- Draw Graph for each node / 各ノードのグラフ作成用
+static void drawScreen_node(int idx) {
+  lgfx::LovyanGFX &g = spriteOk ? static_cast<lgfx::LovyanGFX &>(canvas)
+                                : static_cast<lgfx::LovyanGFX &>(M5.Display);
+
+  // (0,0) 左上
+  // |
+  // +-- (10, 10) ➔ ここに「Graph: n1」の文字が描かれる（文字の高さは約16px）
+  // |
+  // +-- (40, 40) --------------------------- (310, 40)  ← 上の水平線
+  // |            |                         |
+  // |            |                         |
+  // |            |  Graph Area             |
+  // |            |  (Height: 160px)        |
+  // |            |                         |
+  // +-- (40,200) --------------------------- (310,200)  ← 下の水平線
+  //              ↑                         ↑
+  //           左の垂直線                右の垂直線                              
+  
+  // Draw background
+  g.fillRect(0, 0, 320, 240, TFT_BLACK);
+
+  // Title settings
+  g.setTextSize(2);
+  g.setTextColor(TFT_WHITE);
+  g.setCursor(10, 10);
+  
+  g.printf("Graph: %s\n", NODE_IDS[idx]);
+
+  // Draw the outer frame(axes) of the graph
+  // Draw Outer frame (top edge 40, bottom edge 200, left edge 10, right edge 310) 
+  // g.drawRect(10, 40, 300, 160, TFT_DARKGREY); 
+  g.drawFastHLine(40, 40,  270, TFT_DARKGREY); // 上の水平線 (X=40から横幅270)
+  g.drawFastHLine(40, 200, 270, TFT_DARKGREY); // 下の水平線 (X=40から横幅270)
+  g.drawFastVLine(40, 40,  160, TFT_DARKGREY); // 左の垂直線 (Y=40から縦幅160)
+  g.drawFastVLine(310, 40, 160, TFT_DARKGREY); // 右の垂直線 (Y=40から縦幅160)
+  // Draw center line
+  g.drawFastVLine(175, 40, 160, TFT_DARKGREY);
+
+  // Draw the tick marks (numbers) on the vertical axis
+  // 縦軸のグラフのメモリを書く
+  g.setTextSize(1);
+
+  g.setCursor(12, 40-4);
+  g.printf("%d C", (int)Y_MAX);
+
+  g.setCursor(20, 120-4);
+  g.printf("%d", (int)((Y_MAX + Y_MIN) / 2.0f));
+
+  g.setCursor(20, 200-4);
+  g.printf("%d", (int)Y_MIN);
+
+  // Draw the tick marks (numbers) on the horizontal axis
+  // 横軸のグラフのメモリを描く
+  g.setCursor(40, 200 + 8);
+  g.printf("0h");
+
+  g.setCursor(160, 200 + 8);
+  g.printf("1.5h");
+
+  g.setCursor(290, 200 + 8);
+  g.printf("3h");
+
+
+  // --- Draw the line graph ---  
+  int prev_x = 0, prev_y = 0;   // previous x, y
+  // The flag to determine whether it is the first point(最初の点かどうかを判定する)
+  bool is_first_point = true;
+  // Determine the number of loop iterations in advance based on conditions
+  int loop_count = historyFull[idx] ? HISTORY_SIZE : write_index[idx];
+
+  int rb_idx = write_index[idx];
+
+  for (int i = 0; i < loop_count; i++) {
+    int data_idx = historyFull[idx] ? rb_idx : i;
+
+     // x-coordinate (x座標)
+    int x = 40 + (i * 270) / HISTORY_SIZE;
+
+    // y-coordinate (y座標)
+    float temp = nodeTempRingBuffer[idx][data_idx];
+      
+    if (temp == 0.0f) { // If the data is still empty (0.0), skip the rendering for this loop
+      is_first_point = true;
+
+      if (historyFull[idx]) {
+        // next index (配列の次のindex)
+        rb_idx = (rb_idx + 1) % HISTORY_SIZE; 
+      }
+      continue;
+    }
+
+    int y = 200 - (int)( (temp - Y_MIN) * 160.0f / (Y_MAX - Y_MIN) );
+
+    // Force data falling outside the range to fit within the graph's boundaries (40–200)
+    // 範囲外のデータを、グラフの枠内（40〜200）に強制的に閉じ込める
+    y = constrain(y, 40, 200); 
+
+    // plot and draw line
+    g.drawPixel(x, y, TFT_WHITE);
+    if (is_first_point) {
+      is_first_point = false;
+    } else {
+      g.drawLine(prev_x, prev_y, x, y, TFT_WHITE);
+    }
+
+    prev_x = x;
+    prev_y = y;
+
+    if (historyFull[idx]) {
+      // next index (配列の次のindex)
+      rb_idx = (rb_idx + 1) % HISTORY_SIZE;
+    }
+  }
+
+  if (spriteOk) {
+    canvas.pushSprite(0, 0);
+  }
+}
+
+
+
+
 void setup() {
   auto cfg = M5.config();
   M5.begin(cfg);
@@ -324,7 +487,30 @@ void setup() {
     ESP.restart();
   }
   esp_now_register_recv_cb(onRecv);
+
+/*
+  // ===============================================================
+  // 【グラフィックテスト用ダミーデータ】
+  //  本格的なテストのためには最低数分から3時間待たなければいけないため、
+  //  ダミーデータを作成
+  // ===============================================================
+  for (int idx = 0; idx < NODE_COUNT; idx++) {
+    for (int i = 0; i < 360; i++) {
+      // 20度〜30度の間で、綺麗なサイン波（なだらかな波）を作るダミーデータ
+      float dummy_temp = 25.0f + 5.0f * sin((float)i * 0.1f);
+      
+      // リングバッファに直接流し込む
+      nodeTempRingBuffer[idx][i] = dummy_temp;
+    }
+    // 360件すべて埋まった状態（満杯フラグをtrueにする）
+    write_index[idx] = 0;
+    historyFull[idx] = true;
+  }
+  // ==========================================
+*/
 }
+
+
 
 void loop() {
   M5.update();
@@ -336,11 +522,37 @@ void loop() {
     qTail = (qTail + 1) % QUEUE_SIZE;
   }
 
+  // Change the screenMode value based on whether the button is pressed
+  // ボタンが押されたかどうかでscreenMode値変更
+  static uint32_t lastBtnMs = 0;
+
+  if (M5.BtnA.wasPressed()) {
+    uint32_t nowMs = millis();
+
+    // 前回の判定から200m秒以上たっていない場合は無視(チャタリング防止)
+    // Ignore if less than 200 milliseconds have elapsed since the previous determination (simple debouncing)
+    if (nowMs - lastBtnMs >= 200) {
+      lastBtnMs = nowMs;
+
+      screenMode++;
+      if (screenMode >= MAX_SCREENS) {
+        screenMode = 0;
+      }
+    }
+
+  }
+
   // 1秒ごとに画面更新
   static uint32_t lastDraw = 0;
   if (millis() - lastDraw >= 1000) {
     lastDraw = millis();
-    drawScreen();
+    
+    if (screenMode == 0) {
+      drawScreen_list();    // List view(一覧表示)
+    } else {
+      drawScreen_node(screenMode - 1);   // Graph view(グラフ表示)
+    }
+    
   }
   delay(10);
 }
