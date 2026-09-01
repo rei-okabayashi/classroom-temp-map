@@ -164,21 +164,30 @@ static void handlePacket(const char *json) {
   nodes[idx].lastMs    = millis();
   nodes[idx].seq       = seq;
   nodes[idx].sensorErr = isErr;
+
   if (!isErr) { 
     nodes[idx].t = t; 
     nodes[idx].h = h; 
-
-    // Add t & h in ring buffer (リングバッファにt, hのデータを追加)
-    nodeTempRingBuffer[idx][write_index[idx]] = t;
-    nodeHumidRingBuffer[idx][write_index[idx]] = h;
-    write_index[idx]++;
-
-    if (write_index[idx] >= HISTORY_SIZE) {
-      write_index[idx] = 0;
-      historyFull[idx] = true;
-    }
-
   }
+
+  // If the data is valid, set the temperature and humidity,
+  // if there is an error, set 0.0f
+  float target_t = isErr ? 0.0f : (t + CAL_OFFSET_T[idx]);
+  float target_h = isErr ? 0.0f : h;
+
+  // Add t & h in ring buffer (リングバッファにt, hのデータを追加)
+  nodeTempRingBuffer[idx][write_index[idx]] = target_t;
+  nodeHumidRingBuffer[idx][write_index[idx]] = target_h;
+
+  // Increment idx of the ring buffer. When it reaches the limit(HISTORY_SIZE 360),
+  // reset it to 0 and set the historyFull flag
+  write_index[idx]++;
+
+  if (write_index[idx] >= HISTORY_SIZE) {
+    write_index[idx] = 0;
+    historyFull[idx] = true;
+  }
+
 
   // CSV追記（契約: recv_time,clock,node_id,seq,temp_c,hum_pct,status）
   char ts[24];
@@ -376,82 +385,54 @@ static void drawScreen_node(int idx) {
 
   // --- Draw the line graph ---  
   int prev_x = 0, prev_y = 0;   // previous x, y
+  // The flag to determine whether it is the first point(最初の点かどうかを判定する)
+  bool is_first_point = true;
+  // Determine the number of loop iterations in advance based on conditions
+  int loop_count = historyFull[idx] ? HISTORY_SIZE : write_index[idx];
 
-  // When the ring buffer is not full yet(リングバッファ内のデータがfullではないとき)
-  if (historyFull[idx] == false) {
-    // The flag to determine whether it is the first point(最初の点かどうかを判定する)
-    bool is_first_point = true;
+  int rb_idx = write_index[idx];
 
-    for (int i = 0; i < write_index[idx]; i++) {
-      // x-coordinate (x座標)
-      int x = 40 + (i * 270) / HISTORY_SIZE;
+  for (int i = 0; i < loop_count; i++) {
+    int data_idx = historyFull[idx] ? rb_idx : i;
 
-      // y-coordinate (y座標)
-      float temp = nodeTempRingBuffer[idx][i];
+     // x-coordinate (x座標)
+    int x = 40 + (i * 270) / HISTORY_SIZE;
+
+    // y-coordinate (y座標)
+    float temp = nodeTempRingBuffer[idx][data_idx];
       
-      if (temp == 0.0f) { // If the data is still empty (0.0), skip the rendering for this loop
-        is_first_point = true;
-        continue;
+    if (temp == 0.0f) { // If the data is still empty (0.0), skip the rendering for this loop
+      is_first_point = true;
+
+      if (historyFull[idx]) {
+        // next index (配列の次のindex)
+        rb_idx = (rb_idx + 1) % HISTORY_SIZE; 
       }
-
-      int y = 200 - (int)( (temp - Y_MIN) * 160.0f / (Y_MAX - Y_MIN) );
-
-      // Force data falling outside the range to fit within the graph's boundaries (40–200)
-      // 範囲外のデータを、グラフの枠内（40〜200）に強制的に閉じ込める
-      y = constrain(y, 40, 200); 
-
-      // plot and draw line
-      g.drawPixel(x, y, TFT_WHITE);
-      if (is_first_point) {
-        is_first_point = false;
-      } else {
-        g.drawLine(prev_x, prev_y, x, y, TFT_WHITE);
-      }
-
-      prev_x = x;
-      prev_y = y;
+      continue;
     }
-  } 
-  // When the ring buffer is full(リングバッファ内のデータがfullのとき)
-  else {
-    int rb_idx = write_index[idx];
-    // The flag to determine whether it is the first point(最初の点かどうかを判定する)
-    bool is_first_point = true;
 
-    for (int i = 0; i < HISTORY_SIZE; i++) {
-      // x-coordinate (x座標)
-      int x = 40 + (i * 270) / HISTORY_SIZE;
+    int y = 200 - (int)( (temp - Y_MIN) * 160.0f / (Y_MAX - Y_MIN) );
 
-      // y-coordinate (y座標)
-      float temp = nodeTempRingBuffer[idx][rb_idx];
+    // Force data falling outside the range to fit within the graph's boundaries (40–200)
+    // 範囲外のデータを、グラフの枠内（40〜200）に強制的に閉じ込める
+    y = constrain(y, 40, 200); 
 
-      if (temp == 0.0f) { // If the data is still empty (0.0), skip the rendering for this loop
-        is_first_point = true;
-        continue;
-      }
+    // plot and draw line
+    g.drawPixel(x, y, TFT_WHITE);
+    if (is_first_point) {
+      is_first_point = false;
+    } else {
+      g.drawLine(prev_x, prev_y, x, y, TFT_WHITE);
+    }
 
-      int y = 200 - (int)( (temp - Y_MIN) * 160.0f / (Y_MAX - Y_MIN) );
+    prev_x = x;
+    prev_y = y;
 
-      // Force data falling outside the range to fit within the graph's boundaries (40–200)
-      // 範囲外のデータを、グラフの枠内（40〜200）に強制的に閉じ込める
-      y = constrain(y, 40, 200); 
-
-      // plot and draw line
-      g.drawPixel(x, y, TFT_WHITE);
-      if (is_first_point) {
-        is_first_point = false;
-      } else {
-        g.drawLine(prev_x, prev_y, x, y, TFT_WHITE);
-      }
-
-      prev_x = x;
-      prev_y = y;
-
+    if (historyFull[idx]) {
       // next index (配列の次のindex)
       rb_idx = (rb_idx + 1) % HISTORY_SIZE;
     }
   }
-
 
   if (spriteOk) {
     canvas.pushSprite(0, 0);
