@@ -1,0 +1,74 @@
+# ================================================================
+# ファームウェアのコンパイル自動チェック
+#
+# firmware/ 以下を変更したPRが出るたびに、GitHubの用意したLinux上で
+# 全スケッチが本当にビルドできるかを検証する。実機への書き込みはしない。
+#
+# 落ちたときの読み方: 失敗したスケッチ名のグループを開くと、
+# Arduino IDEの「検証」で出るのと同じエラーがそのまま出ている。
+#
+# 対象は firmware/nodes/ 配下を自動で拾うので、n5を追加しても
+# このファイルを直す必要はない。
+# ================================================================
+name: firmware build check
+
+on:
+  pull_request:
+    paths:
+      - 'firmware/**'
+      - '.github/workflows/compile-firmware.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'firmware/**'
+      - '.github/workflows/compile-firmware.yml'
+  workflow_dispatch:
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: arduino/setup-arduino-cli@v2
+
+      # ESP32コアは数百MBあるので、2回目以降は再ダウンロードしない
+      - name: キャッシュの復元
+        uses: actions/cache@v4
+        with:
+          path: ~/.arduino15
+          key: arduino15-esp32-v1
+          restore-keys: arduino15-esp32-
+
+      - name: ESP32コアとライブラリの用意
+        run: |
+          arduino-cli config init --overwrite
+          arduino-cli config add board_manager.additional_urls \
+            https://espressif.github.io/arduino-esp32/package_esp32_index.json
+          arduino-cli core update-index
+          arduino-cli core install esp32:esp32
+          arduino-cli lib install M5Unified
+
+      # FQBN（ボード識別子）を間違えたときに正解がログに残るようにしておく
+      - name: 環境情報
+        run: |
+          echo "::group::インストール済みコア"
+          arduino-cli core list
+          echo "::endgroup::"
+          echo "::group::M5Stack系ボードの識別子一覧"
+          arduino-cli board listall | grep -i m5stack || echo "(該当なし)"
+          echo "::endgroup::"
+
+      - name: ノードのコンパイル（ESP32-DevKitC）
+        run: |
+          fail=0
+          for sketch in firmware/node-template firmware/nodes/*/; do
+            sketch="${sketch%/}"
+            echo "::group::$sketch"
+            arduino-cli compile --fqbn esp32:esp32:esp32 "$sketch" || fail=1
+            echo "::endgroup::"
+          done
+          exit $fail
+
+      - name: 集約側のコンパイル（M5Stack Basic）
+        run: arduino-cli compile --fqbn esp32:esp32:m5stack_core firmware/gateway
