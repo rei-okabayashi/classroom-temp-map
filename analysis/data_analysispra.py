@@ -13,23 +13,31 @@ import matplotlib.dates as mdates
 import matplotlib.ticker as ticker
 import pandas as pd
 import sqlite3
+from pathlib import Path
+import sys
 
 
-conn = sqlite3.connect("analysis/onmura.db") #データベースと接続
+DB = Path(__file__).resolve().parent / "onmura.db"   # このファイルと同じフォルダのDBを見る
+conn = sqlite3.connect(DB)   # データベースと接続
 
-#時間とノードでフィルタをかけ、ノード、温度、時間を取得
-df = pd.read_sql("SELECT node_id, temp_c, recv_time FROM readings where node_id = 'n4' and recv_time > '2026-08-25 08:00:00' and recv_time < '2026-08-25 16:00:00' ", conn)
+
+#時間とノードでフィルタをかけ、ノード、温度、時間を取得し、時間順に並べる。
+df = pd.read_sql("SELECT node_id, temp_c, recv_time FROM readings where node_id = 'n1' and recv_time > '2026-08-24 02:00:00' and recv_time < '2026-08-24 14:00:00' order by recv_time ", conn)
 
 conn.close() #データベースを閉じる
 
+#データが空だった場合にプログラムを終了させ、メッセージを出力。
+if df.empty:
+    sys.exit("その条件のデータがありません。node_idと時間範囲を確認してください。")
 
-plt.rcParams["font.family"] = "Yu Gothic"   #フォントの指定　AI生成
+
+plt.rcParams["font.family"] = "Yu Gothic"   #フォントの指定 AI生成
 
 
 df["recv_time"] = pd.to_datetime(df["recv_time"]) #pandasで扱うため時間のデータ型に変換 AIの提案ほぼそのまま
 
 
-#.plotは折れ線グラフを描画するための関数。引数(時間データ(5個おき)x軸に、温度データ(5個おき)をy軸に、折れ線の色、ラベル名　[::5]の部分はAIで知る
+#.plotは折れ線グラフを描画するための関数。引数(時間データ(5個おき)x軸に、温度データ(5個おき)をy軸に、折れ線の色、ラベル名 [::5]の部分はAIで知る
 plt.plot(df["recv_time"].iloc[::5], df["temp_c"].iloc[::5], color = "g", label = df["node_id"].iloc[0])
 
 plt.legend() #ラベルを画面に表示
@@ -51,7 +59,7 @@ plt.gca().yaxis.set_major_locator(ticker.MultipleLocator(1))    #y軸の主目�
 plt.gca().yaxis.set_minor_locator(ticker.MultipleLocator(0.5))  #y軸の補助目盛りの設定
 
 
-ticks = list(plt.gca().get_xticks())    #x軸の要素(今回時間のデータ)を内部的な数値に変換し、リストとして取得    
+ticks = list(plt.gca().get_xticks())    #x軸の要素(今回時間のデータ)を内部的な数値に変換し、リストとして取得
 ticks = [mdates.date2num(df["recv_time"].iloc[0])] + ticks + [mdates.date2num(df["recv_time"].iloc[-1])] #ticksに列の最初の要素と最後の要素を追加(目盛りの最初と最後を表示したい)
 
 plt.xticks(ticks)   #最終的な目盛りの表示の設定
@@ -66,10 +74,10 @@ plt.tick_params(direction = 'inout', which = 'both')    #目盛りの設定 dire
 
 plt.margins(x = 0, y = 0)   #デフォルトで設定された余白をなくすためのもの
 
-plt.ylim(20, 32)    #y軸の幅　今回20～32度
+plt.ylim(20, 32)    #y軸の幅 今回20～32度
 
 
-plt.title("教室の温度推移")    #グラフのタイトル 
+plt.title("教室の温度推移")    #グラフのタイトル
 
 """target = pd.to_datetime("15:00")
 print(df[
