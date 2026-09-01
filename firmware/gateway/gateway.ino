@@ -31,6 +31,8 @@
 #define QUEUE_SIZE 8
 #define PKT_MAX    256   // ESP-NOWの上限250バイト+終端に収まるサイズ
 #define HISTORY_SIZE 360 // Size of ring buffers which have temperature and humidity(Three hours' data)
+#define Y_MAX 34  // Maximum value of the y-axis(y軸の最大値)
+#define Y_MIN 18  // Minimum value of the y-axis(y軸の最小値)
 static char queueBuf[QUEUE_SIZE][PKT_MAX];
 static volatile int qHead = 0;  // コールバック(書く側)が進める
 static volatile int qTail = 0;  // loop(読む側)が進める
@@ -308,7 +310,7 @@ static void drawScreen_list() {
 
 
 
-// --- Draw Graph for each node (working) / 各ノードのグラフ作成用(作業中)
+// --- Draw Graph for each node / 各ノードのグラフ作成用
 static void drawScreen_node(int idx) {
   lgfx::LovyanGFX &g = spriteOk ? static_cast<lgfx::LovyanGFX &>(canvas)
                                 : static_cast<lgfx::LovyanGFX &>(M5.Display);
@@ -350,14 +352,15 @@ static void drawScreen_node(int idx) {
   // Draw the tick marks (numbers) on the vertical axis
   // 縦軸のグラフのメモリを書く
   g.setTextSize(1);
-  g.setCursor(20, 40-6);
-  g.printf("40 C");
+
+  g.setCursor(12, 40-4);
+  g.printf("%d C", (int)Y_MAX);
 
   g.setCursor(20, 120-4);
-  g.printf("25");
+  g.printf("%d", (int)((Y_MAX + Y_MIN) / 2.0f));
 
   g.setCursor(20, 200-4);
-  g.printf("20");
+  g.printf("%d", (int)Y_MIN);
 
   // Draw the tick marks (numbers) on the horizontal axis
   // 横軸のグラフのメモリを描く
@@ -375,15 +378,23 @@ static void drawScreen_node(int idx) {
   int prev_x = 0, prev_y = 0;   // previous x, y
 
   // When the ring buffer is not full yet(リングバッファ内のデータがfullではないとき)
-  if (historyFull[idx] == false) {     
+  if (historyFull[idx] == false) {
+    // The flag to determine whether it is the first point(最初の点かどうかを判定する)
+    bool is_first_point = true;
+
     for (int i = 0; i < write_index[idx]; i++) {
       // x-coordinate (x座標)
       int x = 40 + (i * 270) / HISTORY_SIZE;
 
       // y-coordinate (y座標)
       float temp = nodeTempRingBuffer[idx][i];
-      if (temp == 0.0f) continue;   // If the data is still empty (0.0), skip the rendering for this loop
-      int y = 200 - (int)( (temp - 10.0f) * 160.0f / (40.0f - 10.0f) );
+      
+      if (temp == 0.0f) { // If the data is still empty (0.0), skip the rendering for this loop
+        is_first_point = true;
+        continue;
+      }
+
+      int y = 200 - (int)( (temp - Y_MIN) * 160.0f / (Y_MAX - Y_MIN) );
 
       // Force data falling outside the range to fit within the graph's boundaries (40–200)
       // 範囲外のデータを、グラフの枠内（40〜200）に強制的に閉じ込める
@@ -391,7 +402,9 @@ static void drawScreen_node(int idx) {
 
       // plot and draw line
       g.drawPixel(x, y, TFT_WHITE);
-      if (i != 0) {
+      if (is_first_point) {
+        is_first_point = false;
+      } else {
         g.drawLine(prev_x, prev_y, x, y, TFT_WHITE);
       }
 
@@ -402,6 +415,8 @@ static void drawScreen_node(int idx) {
   // When the ring buffer is full(リングバッファ内のデータがfullのとき)
   else {
     int rb_idx = write_index[idx];
+    // The flag to determine whether it is the first point(最初の点かどうかを判定する)
+    bool is_first_point = true;
 
     for (int i = 0; i < HISTORY_SIZE; i++) {
       // x-coordinate (x座標)
@@ -409,8 +424,13 @@ static void drawScreen_node(int idx) {
 
       // y-coordinate (y座標)
       float temp = nodeTempRingBuffer[idx][rb_idx];
-      if (temp == 0.0f) continue;  // If the data is still empty (0.0), skip the rendering for this loop 
-      int y = 200 - (int)( (temp - 10.0f) * 160.0f / (40.0f - 10.0f) );
+
+      if (temp == 0.0f) { // If the data is still empty (0.0), skip the rendering for this loop
+        is_first_point = true;
+        continue;
+      }
+
+      int y = 200 - (int)( (temp - Y_MIN) * 160.0f / (Y_MAX - Y_MIN) );
 
       // Force data falling outside the range to fit within the graph's boundaries (40–200)
       // 範囲外のデータを、グラフの枠内（40〜200）に強制的に閉じ込める
@@ -418,7 +438,9 @@ static void drawScreen_node(int idx) {
 
       // plot and draw line
       g.drawPixel(x, y, TFT_WHITE);
-      if (i != 0) {
+      if (is_first_point) {
+        is_first_point = false;
+      } else {
         g.drawLine(prev_x, prev_y, x, y, TFT_WHITE);
       }
 
