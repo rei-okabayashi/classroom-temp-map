@@ -20,10 +20,10 @@ conn = sqlite3.connect(DB)   # データベースと接続
 
 
 #時間とノードでフィルタをかけ、ノード、温度、時間を取得
-df = pd.read_sql("SELECT node_id, temp_c, recv_time FROM readings where node_id = 'n1' and recv_time > '2026-08-25 08:00:00' and recv_time < '2026-08-25 16:00:00' order by recv_time", conn)
-df2 = pd.read_sql("SELECT node_id, temp_c, recv_time FROM readings where node_id = 'n2' and recv_time > '2026-08-25 08:00:00' and recv_time < '2026-08-25 16:00:00' order by recv_time", conn)
-df3 = pd.read_sql("SELECT node_id, temp_c, recv_time FROM readings where node_id = 'n3' and recv_time > '2026-08-25 08:00:00' and recv_time < '2026-08-25 16:00:00' order by recv_time", conn)
-df4 = pd.read_sql("SELECT node_id, temp_c, recv_time FROM readings where node_id = 'n4' and recv_time > '2026-08-25 08:00:00' and recv_time < '2026-08-25 16:00:00' order by recv_time", conn)
+df = pd.read_sql("SELECT node_id, temp_c, recv_time FROM readings where node_id = 'n1' and recv_time > '2026-09-02 09:30:00' and recv_time < '2026-09-02 16:00:00' order by recv_time", conn)
+df2 = pd.read_sql("SELECT node_id, temp_c, recv_time FROM readings where node_id = 'n2' and recv_time > '2026-09-02 09:30:00' and recv_time < '2026-09-02 16:00:00' order by recv_time", conn)
+df3 = pd.read_sql("SELECT node_id, temp_c, recv_time FROM readings where node_id = 'n3' and recv_time > '2026-09-02 09:30:00' and recv_time < '2026-09-02 16:00:00' order by recv_time", conn)
+df4 = pd.read_sql("SELECT node_id, temp_c, recv_time FROM readings where node_id = 'n4' and recv_time > '2026-09-02 09:30:00' and recv_time < '2026-09-02 16:00:00' order by recv_time", conn)
 
 conn.close() #データベースを閉じる
 
@@ -82,7 +82,7 @@ plt.margins(x = 0, y = 0)   #デフォルトで設定された余白をなくす
 plt.ylim(18, 36)    #y軸の幅　今回18～36度
 
 
-plt.title("教室の温度推移")    #グラフのタイトル 
+plt.title("教室の温度推移 2026-09-02")    #グラフのタイトル 
 
 
 plt.show()
