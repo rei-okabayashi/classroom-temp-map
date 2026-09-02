@@ -14,7 +14,7 @@
 //   画面レイアウトの改善・日本語表示・しきい値アラート(色)・校正値の反映・
 //   時刻運用の改善・ミニグラフ など(docs/backlog.md参照)。
 //
-// 動作環境: M5Stack Basic / arduino-esp32 core 3.3系 / M5Unified
+// 動作環境: M5Stack Basic / arduino-esp32 core 2.0系 / M5Unified
 // ================================================================
 
 #include <M5Unified.h>
@@ -31,8 +31,8 @@
 #define QUEUE_SIZE 8
 #define PKT_MAX    256   // ESP-NOWの上限250バイト+終端に収まるサイズ
 #define HISTORY_SIZE 360 // Size of ring buffers which have temperature and humidity(Three hours' data)
-#define Y_MAX 34  // Maximum value of the y-axis(y軸の最大値)
-#define Y_MIN 18  // Minimum value of the y-axis(y軸の最小値)
+#define Y_MAX 30  // Maximum value of the y-axis(y軸の最大値)
+#define Y_MIN 21  // Minimum value of the y-axis(y軸の最小値)
 static char queueBuf[QUEUE_SIZE][PKT_MAX];
 static volatile int qHead = 0;  // コールバック(書く側)が進める
 static volatile int qTail = 0;  // loop(読む側)が進める
