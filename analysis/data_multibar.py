@@ -1,9 +1,7 @@
 """使いたい場合はpython, pandas, matplotlibのインストールが必要です。
 1, analysisフォルダのREADMEに従ってonmura.dbを作成します。この際csvは"LOG.CSV"という名前じゃないと作成してくれません。
-2, df = pd.read_sqlから始まる行の時間範囲(recv_time)を変えればグラフの範囲も変わります。
+2, df = pd.read_sqlから始まる4行は各ノードを示しており、それぞれ時間範囲(recv_time)を合わせる必要があります。
 3, 実行を押すとグラフが表示されます。
-4, プログラムの下側plt.show()の手前にコメントアウトしてある行がありますが、これは指定した時間の値を出力させる確認用のものです。気になったらお使いください。
-
 """
 
 
@@ -19,13 +17,13 @@ import sys
 DB = Path(__file__).resolve().parent / "onmura.db"   # このファイルと同じフォルダのDBを見る
 conn = sqlite3.connect(DB)   # データベースと接続
 
-#conn = sqlite3.connect("analysis/onmura.db") #データベースと接続
+
 
 #時間とノードでフィルタをかけ、ノード、温度、時間を取得
-df = pd.read_sql("SELECT node_id, temp_c, recv_time FROM readings where node_id = 'n1' and recv_time > '2026-08-24 08:00:00' and recv_time < '2026-08-24 15:00:00' order by recv_time", conn)
-df2 = pd.read_sql("SELECT node_id, temp_c, recv_time FROM readings where node_id = 'n2' and recv_time > '2026-08-24 08:00:00' and recv_time < '2026-08-24 15:00:00' order by recv_time", conn)
-df3 = pd.read_sql("SELECT node_id, temp_c, recv_time FROM readings where node_id = 'n3' and recv_time > '2026-08-24 08:00:00' and recv_time < '2026-08-24 15:00:00' order by recv_time", conn)
-df4 = pd.read_sql("SELECT node_id, temp_c, recv_time FROM readings where node_id = 'n4' and recv_time > '2026-08-24 08:00:00' and recv_time < '2026-08-24 15:00:00' order by recv_time", conn)
+df = pd.read_sql("SELECT node_id, temp_c, recv_time FROM readings where node_id = 'n1' and recv_time > '2026-08-25 08:00:00' and recv_time < '2026-08-25 16:00:00' order by recv_time", conn)
+df2 = pd.read_sql("SELECT node_id, temp_c, recv_time FROM readings where node_id = 'n2' and recv_time > '2026-08-25 08:00:00' and recv_time < '2026-08-25 16:00:00' order by recv_time", conn)
+df3 = pd.read_sql("SELECT node_id, temp_c, recv_time FROM readings where node_id = 'n3' and recv_time > '2026-08-25 08:00:00' and recv_time < '2026-08-25 16:00:00' order by recv_time", conn)
+df4 = pd.read_sql("SELECT node_id, temp_c, recv_time FROM readings where node_id = 'n4' and recv_time > '2026-08-25 08:00:00' and recv_time < '2026-08-25 16:00:00' order by recv_time", conn)
 
 conn.close() #データベースを閉じる
 
@@ -81,15 +79,11 @@ plt.tick_params(direction = 'inout', which = 'both')    #目盛りの設定 dire
 
 plt.margins(x = 0, y = 0)   #デフォルトで設定された余白をなくすためのもの
 
-plt.ylim(18, 36)    #y軸の幅　今回20～30度
+plt.ylim(18, 36)    #y軸の幅　今回18～36度
 
 
 plt.title("教室の温度推移")    #グラフのタイトル 
 
-"""target = pd.to_datetime("15:00")
-print(df[
-    df["recv_time"].dt.strftime("%H:%M") == target.strftime("%H:%M")
-])"""
 
 plt.show()
 
