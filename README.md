@@ -84,7 +84,7 @@ classroom-temp-map/
 | 自分の役割が決まったら | [docs/roles.md](docs/roles.md) の自分の行、[docs/tasks-initial.md](docs/tasks-initial.md) の自分のタスク | 他の人の分は読まなくてOKです |
 | 自分のノードを作るとき | [docs/data-contract.md](docs/data-contract.md)・[docs/first-boot-check.md](docs/first-boot-check.md) のA章 | ノード担当全員（8/17週〜） |
 | データ分析をするとき | [analysis/README.md](analysis/README.md) | 分析担当向けです |
-| 9/4のKPTと発表準備（9/4〜9/11） | [docs/kpt-0904.md](docs/kpt-0904.md)・[docs/final-week-plan.md](docs/final-week-plan.md)・[docs/handout-0911.md](docs/handout-0911.md) | 9/4の進行台本、9/9のデータ回収〜9/11発表当日の段取り、当日配る1枚資料の構成案です |
+| 9/4のKPTから9/11の発表まで | [docs/final-week.md](docs/final-week.md) | 完成デモ・KPT・データ回収・発表当日の段取りを1枚にまとめたものです |
 
 **次の5つは、ふだん読まなくていい資料です**（必要な場面になったら企画者が案内します）：
 [docs/day0-agenda.md](docs/day0-agenda.md)（Day 0の進行台本。当日は企画者が進めます）／[docs/task-cards.md](docs/task-cards.md)（Issueの見かたに迷ったとき用）／[docs/backlog.md](docs/backlog.md)（前倒しできたときの追加機能）／[docs/presentation-outline.md](docs/presentation-outline.md)（3週目の発表準備で使います）／[docs/scope-cut-order.md](docs/scope-cut-order.md)（完成が危ういときだけ）
