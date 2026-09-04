@@ -3,7 +3,7 @@
 訓練校のチーム制作（自主活動・授業時間外）として、教室内の温度ムラをセンサーで可視化するプロジェクトです。
 ESP32（無線通信ができる小型マイコンです。マイコンとは、プログラムで動く小さなコンピューターのことです）を使ったノード（教室に置く測定係の小さなコンピューターです。ESP32＋温湿度センサーのセットで、n1〜n4の4台があります）が、教室内の複数地点で温湿度を測ります。教壇のM5Stack（画面つきの小型マイコンです。教壇に置いて受信データを表示・記録します）に無線で集約したうえで、画面表示とSD記録を経てデータ分析まで行います。
 メンバーは今回が初めてのチーム開発で、実際に手を動かして完成させる経験を積み、就活で語れる実績につなげることを目的にしています。
-2026年8月17日のDay 0でチーム開発を開始し、9月4日に完成デモ、9月中旬に校内発表を予定しています。
+2026年8月17日のDay 0でチーム開発を開始し、9月4日に完成デモ、**9月11日（金）15:10から校内発表**を行います（普段の教室で、授業終了の5分後にそのまま始めます）。
 
 ## システム構成
 
@@ -84,6 +84,7 @@ classroom-temp-map/
 | 自分の役割が決まったら | [docs/roles.md](docs/roles.md) の自分の行、[docs/tasks-initial.md](docs/tasks-initial.md) の自分のタスク | 他の人の分は読まなくてOKです |
 | 自分のノードを作るとき | [docs/data-contract.md](docs/data-contract.md)・[docs/first-boot-check.md](docs/first-boot-check.md) のA章 | ノード担当全員（8/17週〜） |
 | データ分析をするとき | [analysis/README.md](analysis/README.md) | 分析担当向けです |
+| 9/4のKPTから9/11の発表まで | [docs/final-week.md](docs/final-week.md) | 完成デモ・KPT・データ回収・発表当日の段取りを1枚にまとめたものです |
 
 **次の5つは、ふだん読まなくていい資料です**（必要な場面になったら企画者が案内します）：
 [docs/day0-agenda.md](docs/day0-agenda.md)（Day 0の進行台本。当日は企画者が進めます）／[docs/task-cards.md](docs/task-cards.md)（Issueの見かたに迷ったとき用）／[docs/backlog.md](docs/backlog.md)（前倒しできたときの追加機能）／[docs/presentation-outline.md](docs/presentation-outline.md)（3週目の発表準備で使います）／[docs/scope-cut-order.md](docs/scope-cut-order.md)（完成が危ういときだけ）
