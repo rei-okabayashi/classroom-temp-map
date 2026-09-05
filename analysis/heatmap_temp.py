@@ -61,7 +61,7 @@ plt.gca().set_yticklabels(node_names, color = "blue", fontsize = 12, fontweight 
 
 plt.gca().xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))      #x軸の目盛りを「時:分」で表示
 
-plt.title("2026-08-25")
+plt.title("教室の温度遷移")
 
 
 plt.colorbar(mesh, label="温度 (℃)") #AI生成 ヒートマップのデータを横のカラーバーにも反映させる。
