@@ -16,7 +16,7 @@ DB = Path(__file__).resolve().parent / "onmura.db"   # このファイルと同�
 conn = sqlite3.connect(DB)   # データベースと接続
 
 #時間とノードでフィルタをかけ、ノード、温度、時間を取得し、時間順に並べる。
-df = pd.read_sql("SELECT node_id, temp_c, recv_time FROM readings where recv_time > '2026-08-26 08:00:00' and recv_time < '2026-08-26 16:00:00' order by recv_time", conn)
+df = pd.read_sql("SELECT node_id, temp_c, recv_time FROM readings where recv_time > '2026-08-25 08:00:00' and recv_time < '2026-08-25 16:00:00' order by recv_time", conn)
 
 conn.close()
 
