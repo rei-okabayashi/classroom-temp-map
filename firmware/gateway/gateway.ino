@@ -241,6 +241,16 @@ static void pollSerialTime() {
 }
 
 
+// ---- 一覧画面の列位置 ----
+// 標準フォントは等幅(textSize 2 で1文字12px)。ラベルの文字数がノードごとに違っても
+// 温湿度の列がずれないように、値の開始xはラベルの最大文字数(LABEL_CHARS)から固定で決める。
+//   [n1 ][MADO-ATO][ 26.4C  55.2%]
+//   x=8   x=44      x=148          (LABEL_CHARS=8 のとき。値13文字で右端304px)
+#define CHAR_W2  12                                  // textSize 2 の1文字の幅[px]
+#define ID_X     8
+#define LABEL_X  (ID_X + CHAR_W2 * 3)                 // "n1 " の3文字分右
+#define VALUE_X  (LABEL_X + CHAR_W2 * LABEL_CHARS + 8)
+
 // ---- 画面描画（1秒ごと）----
 // スプライト(メモリ上の下書き)が確保できればちらつきゼロで描く。
 // Basic(PSRAM無し)で確保に失敗したときは画面へ直接描く(多少ちらつくが動く)。
@@ -267,31 +277,35 @@ static void drawScreen_list() {
   // ノード行
   for (int i = 0; i < NODE_COUNT; i++) {
     int y = 34 + i * 44;
-    g.setTextColor(TFT_CYAN);
     g.setTextSize(2);
-    g.setCursor(8, y);
+    g.setTextColor(TFT_CYAN);
+    g.setCursor(ID_X, y);
     g.printf("%s", NODE_IDS[i]);
+    // 設置場所ラベル。"%-*.*s" = 左詰めで LABEL_CHARS 幅に揃え、超えた分は切り捨てる
+    g.setTextColor(TFT_YELLOW);
+    g.setCursor(LABEL_X, y);
+    g.printf("%-*.*s", LABEL_CHARS, LABEL_CHARS, NODE_LABELS[i]);
 
     if (!nodes[i].seen) {
       g.setTextColor(TFT_DARKGREY);
-      g.setCursor(60, y);
+      g.setCursor(VALUE_X, y);
       g.printf("---");
     } else if (millis() - nodes[i].lastMs > STALE_MS) {
       g.setTextColor(TFT_RED);
-      g.setCursor(60, y);
+      g.setCursor(VALUE_X, y);
       g.printf("MUOUTOU %lus", (unsigned long)((millis() - nodes[i].lastMs) / 1000));
     } else if (nodes[i].sensorErr) {
       g.setTextColor(TFT_ORANGE);
-      g.setCursor(60, y);
+      g.setCursor(VALUE_X, y);
       g.printf("SENSOR ERR");
     } else {
       // 表示にだけ校正オフセットを適用（CSVは生値のまま）
       g.setTextColor(TFT_WHITE);
-      g.setCursor(60, y);
+      g.setCursor(VALUE_X, y);
       g.printf("%5.1fC %5.1f%%", nodes[i].t + CAL_OFFSET_T[i], nodes[i].h);
       g.setTextSize(1);
       g.setTextColor(TFT_DARKGREY);
-      g.setCursor(62, y + 18);
+      g.setCursor(VALUE_X + 2, y + 18);
       g.printf("seq=%lu  %lus ago", (unsigned long)nodes[i].seq,
                (unsigned long)((millis() - nodes[i].lastMs) / 1000));
       g.setTextSize(2);
@@ -326,7 +340,7 @@ static void drawScreen_node(int idx) {
 
   // (0,0) 左上
   // |
-  // +-- (10, 10) ➔ ここに「Graph: n1」の文字が描かれる（文字の高さは約16px）
+  // +-- (10, 10) ➔ ここに「Graph: n1 MADO-ATO」の文字が描かれる（文字の高さは約16px）
   // |
   // +-- (40, 40) --------------------------- (310, 40)  ← 上の水平線
   // |            |                         |
@@ -346,7 +360,10 @@ static void drawScreen_node(int idx) {
   g.setTextColor(TFT_WHITE);
   g.setCursor(10, 10);
   
-  g.printf("Graph: %s\n", NODE_IDS[idx]);
+  g.printf("Graph: %s ", NODE_IDS[idx]);
+  g.setTextColor(TFT_YELLOW);
+  g.printf("%.*s", LABEL_CHARS, NODE_LABELS[idx]);   // 設置場所ラベル（一覧画面と同じ色）
+  g.setTextColor(TFT_WHITE);                          // 以降の目盛り文字は白に戻す
 
   // Draw the outer frame(axes) of the graph
   // Draw Outer frame (top edge 40, bottom edge 200, left edge 10, right edge 310) 
