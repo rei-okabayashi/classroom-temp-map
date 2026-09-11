@@ -69,18 +69,10 @@ classroom-temp-map/
 │       └── stl/              # 印刷用STL（本体・ふた・センサー台）
 ├── docs/
 │   ├── data-contract.md      # ノード⇄集約の通信・データ形式の約束事
-│   ├── setup-windows.md      # 開発環境セットアップ手順（Windows）
-│   ├── day0-agenda.md        # Day 0（初回）の進め方
-│   ├── afterschool-plan.md   # 放課後1時間の時間割と週ごとのゴール
-│   ├── task-cards.md         # タスクカード（Issue）の見かた・作り方
-│   ├── git-primer.md         # Git素振りメニュー＆チーム用チートシート
-│   ├── tasks-initial.md      # 初期タスク一覧（Issue登録用の台帳）
-│   ├── backlog.md            # 拡張バックログ（前倒し時にこの順で着手）
+│   ├── setup-windows.md      # 開発環境セットアップ・ビルド・書き込み手順（Windows）
 │   ├── first-boot-check.md   # 初回起動チェックとデータ回収の手順
-│   ├── roles.md              # 役割ごとの「やること」
 │   ├── final-week.md         # 完成デモからの仕上げの段取り
-│   ├── presentation-outline.md  # 校内発表の構成案
-│   └── scope-cut-order.md    # 完成が危ういときに削る順序（8/28・9/2の判断基準）
+│   └── presentation-outline.md  # 校内発表の構成案と想定問答
 ├── analysis/
 │   ├── log_to_sqlite.py      # LOG.CSV→SQLite取り込み＋基本集計（標準ライブラリのみ）
 │   ├── heatmap_temp.py       # 時間帯×地点のヒートマップ（pandas + matplotlib）
@@ -88,35 +80,30 @@ classroom-temp-map/
 │   ├── data_multibar.py      # 4地点をまとめた折れ線グラフ
 │   ├── README.md             # 分析担当の作業手順
 │   └── sample/LOG.CSV        # 動作確認用ダミーデータ
-├── day0/                     # Git演習（8/18）で各自が作った自己紹介ファイル置き場
 ├── .github/
 │   ├── ISSUE_TEMPLATE/task.md
 │   └── pull_request_template.md
 └── .gitignore
 ```
 
-## はじめかた — どの資料を、いつ読むか（チームメンバー向け）
+## 資料の読みかた
 
-> ここから下は、制作中のチームメンバーに向けた進め方の資料です。
-> 外から見に来られた方は、上の「わかったこと」「システム構成」と、[docs/data-contract.md](docs/data-contract.md)（通信とデータ形式の取り決め）・[analysis/README.md](analysis/README.md)（集計の手順）・[firmware/](firmware/)（実際のコード）あたりが中身の入口です。
+知りたいところだけ開けば大丈夫です。全部読む必要はありません。
 
-開発環境の準備は、**自宅PC分が事前宿題**です。**学校PC分はDay 0（8/17）の残り時間と8/18（火）・8/20（木）の放課後にチームで導入します**。Day 0当日は役割の合意と機材配布が中心で、Git演習は8/18に行います（実機の動作確認は8/17週の放課後に順次進めます→[docs/tasks-initial.md](docs/tasks-initial.md) のM2）。
+| 知りたいこと | 読むもの |
+|---|---|
+| ノードと集約の通信・データ形式の取り決め | [docs/data-contract.md](docs/data-contract.md) |
+| 開発環境の作り方・ビルド・書き込み（Windows） | [docs/setup-windows.md](docs/setup-windows.md) |
+| 設置した機材の初回チェックとデータ回収 | [docs/first-boot-check.md](docs/first-boot-check.md) |
+| 集計とグラフの手順 | [analysis/README.md](analysis/README.md) |
+| 発表の構成と想定問答 | [docs/presentation-outline.md](docs/presentation-outline.md) |
+| 完成デモから発表までの段取り | [docs/final-week.md](docs/final-week.md) |
+| ノードのケース（3Dプリント） | [hardware/case/README.md](hardware/case/README.md) |
+| 各ノードのコードの育て方 | [firmware/nodes/README.md](firmware/nodes/README.md) |
 
-資料は多めにありますが、**全部読む必要はありません**。下の表の、いまの自分に当てはまる行だけ読めば大丈夫です。
-
-| いつ・誰が | 読むもの | 補足 |
-|---|---|---|
-| いま（事前宿題） | [docs/setup-windows.md](docs/setup-windows.md)・[docs/setup-discord.md](docs/setup-discord.md) | 済んだ人は読み直し不要です |
-| 環境構築（setup-windows.mdの5章まで）が終わったら | [docs/git-primer.md](docs/git-primer.md) の**第1部** | 練習用リポジトリでの「ひとり素振り」です（目安90分。終わった人から順にやればOKです） |
-| 8/18のGit演習まで | [docs/git-primer.md](docs/git-primer.md) の**第2部** | チーム作業のチートシートです。演習のあとも手元に置いて使います |
-| 放課後の流れを知りたいとき | [docs/afterschool-plan.md](docs/afterschool-plan.md) | 1回ざっと見れば十分です |
-| 自分の役割が決まったら | [docs/roles.md](docs/roles.md) の自分の行、[docs/tasks-initial.md](docs/tasks-initial.md) の自分のタスク | 他の人の分は読まなくてOKです |
-| 自分のノードを作るとき | [docs/data-contract.md](docs/data-contract.md)・[docs/first-boot-check.md](docs/first-boot-check.md) のA章 | ノード担当全員（8/17週〜） |
-| データ分析をするとき | [analysis/README.md](analysis/README.md) | 分析担当向けです |
-| 9/4のKPTから9/11の発表まで | [docs/final-week.md](docs/final-week.md) | 完成デモ・KPT・データ回収・発表当日の段取りを1枚にまとめたものです |
-
-**次の5つは、ふだん読まなくていい資料です**（必要な場面になったら企画者が案内します）：
-[docs/day0-agenda.md](docs/day0-agenda.md)（Day 0の進行台本。当日は企画者が進めます）／[docs/task-cards.md](docs/task-cards.md)（Issueの見かたに迷ったとき用）／[docs/backlog.md](docs/backlog.md)（前倒しできたときの追加機能）／[docs/presentation-outline.md](docs/presentation-outline.md)（3週目の発表準備で使います）／[docs/scope-cut-order.md](docs/scope-cut-order.md)（完成が危ういときだけ）
+制作期間中に使っていた進め方の資料（Day 0の進行台本、放課後の時間割、Git素振り、初期タスク台帳、タスクカードの見かた、拡張バックログ、削る順序など）は、
+**制作の終了にあわせて整理しました**。役目が終わった足場なので消しましたが、変更履歴には残っているのでいつでも取り出せます。
+やったことの記録としては、Issue（#7〜#29 ほか）とPRの履歴のほうが実物に近いです。
 
 ## データ契約
 
@@ -149,12 +136,12 @@ GitHub（書いたプログラムの変更履歴を記録・共有できるWeb�
 
 ### 週次リズム
 
-- 月曜: 週次キックオフ15分（今週の各自のタスクカード＝Issue（やることを1件ずつカードにしたものです）を確認します。カードの見かた・作り方は [docs/task-cards.md](docs/task-cards.md)）
+- 月曜: 週次キックオフ15分（今週の各自のタスクカード＝Issue（やることを1件ずつカードにしたものです）を確認します）
 - 毎日: Discordに2行報告します（きょうやった／困ってる）。書くだけでOKです。返信は必須にしません
 - 金曜: 中間デモ（8/21・8/28）です。進捗の判定はこの場でだけ行います。9/4(金)は完成デモ＋ふりかえり（KPT）です
 - 詰まったら24時間以内に申告してください→企画者と30分ペア作業します。遅れは責めません（タスクの切り方が悪かったとみなして分解し直します）
 - 時間の上限は週5〜8hです。上限は超えません（作業量は役割ごとに波がありますが、上限と見える化で揃えます）
-- 完成が危うくなったら、あらかじめ決めた順に規模を削ります（順序は [docs/scope-cut-order.md](docs/scope-cut-order.md) 参照）
+- 完成が危うくなったら、あらかじめ決めた順に規模を削ります（削る順序は、着手前に決めて文書化しておきました）
 
 ## 役割分担表
 
