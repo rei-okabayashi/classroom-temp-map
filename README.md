@@ -5,6 +5,22 @@ ESP32（無線通信ができる小型マイコンです。マイコンとは、
 メンバーは今回が初めてのチーム開発で、実際に手を動かして完成させる経験を積み、就活で語れる実績につなげることを目的にしています。
 2026年8月17日のDay 0でチーム開発を開始し、9月4日に完成デモ、**9月11日（金）15:10から校内発表**を行います（普段の教室で、授業終了の5分後にそのまま始めます）。
 
+## わかったこと（実測の結果）
+
+![8/25の教室内温度のヒートマップ。横軸が時刻（8:00〜16:00）、縦軸が4つの設置地点、濃いほど高温](docs/images/results/heatmap-0825.png)
+
+*8/25の実測例。縦軸のn1〜n4は下の「ノードと設置場所」の対応表のとおりで、n3が教卓付近です。発表当日に配ったA4資料に合わせて白黒に変換してあります（原図は分析担当がPythonのmatplotlibで作成）。*
+
+2026年8月24日16:08〜8月28日15:47のあいだ、教室内の4地点で30秒ごとに測り続けた結果です。
+
+- **同じ瞬間の最大の差は 4.3℃**（8/25 10:21。教卓 27.0℃ ↔ 廊下側前2 22.7℃）
+- **4地点の温度差の中央値は 1.9℃**。9〜14時は約2℃、15〜16時は1.3〜1.4℃に縮みました
+- 4台がそろって比較できた授業時間のうち、**約99%で教卓のほうが廊下側より暖かい**という、同じ向きの差が出ました
+- エアコンを止めた休日に4台の値を突き合わせたところ、地点ごとの平均の幅は **0.18℃** でした。見たい差の10分の1以下だったので、**補正（校正）はかけず、生の値のまま**分析しています
+
+「席によって暑い・寒いが違う」という体感が、数字として確かめられた形です。
+集計とグラフの手順は [analysis/README.md](analysis/README.md)、スクリプトは [analysis/](analysis/) にあります。
+
 ## システム構成
 
 図中のSHT31は、温度と湿度を測るセンサー部品の型番です。
@@ -39,14 +55,18 @@ classroom-temp-map/
 │   ├── node-template/      # ノード側の雛形（コピーして使う。書き換えるのはconfig.hとreadSensor()のみ）
 │   │   ├── node-template.ino
 │   │   └── config.h
-│   ├── nodes/               # 各メンバーが node-template をコピーして育てる置き場（Day 0以降に作成）
-│   │   ├── n1/               # 【rei-okabayashi】
-│   │   ├── n2/               # 【M27Kyara】
-│   │   ├── n3/               # 【fukura-suzme】
-│   │   └── n4/               # 【mozu-sabo】
+│   ├── nodes/               # 各メンバーが node-template をコピーして育てた実物（4台とも稼働ずみ）
+│   │   ├── n1/n1.ino         # 【rei-okabayashi】
+│   │   ├── n2/n2.ino         # 【M27Kyara】
+│   │   ├── n3/n3.ino         # 【fukura-suzme】
+│   │   └── n4/n4.ino         # 【mozu-sabo】
 │   └── gateway/              # 集約側（M5Stack Basic）。表示とSD記録を担当
 │       ├── gateway.ino
 │       └── config.h
+├── hardware/
+│   └── case/                 # ノードを収める3Dプリント筐体
+│       ├── node_case.scad    # OpenSCADのソース（寸法を変えて出力し直せます）
+│       └── stl/              # 印刷用STL（本体・ふた・センサー台）
 ├── docs/
 │   ├── data-contract.md      # ノード⇄集約の通信・データ形式の約束事
 │   ├── setup-windows.md      # 開発環境セットアップ手順（Windows）
@@ -56,20 +76,29 @@ classroom-temp-map/
 │   ├── git-primer.md         # Git素振りメニュー＆チーム用チートシート
 │   ├── tasks-initial.md      # 初期タスク一覧（Issue登録用の台帳）
 │   ├── backlog.md            # 拡張バックログ（前倒し時にこの順で着手）
+│   ├── first-boot-check.md   # 初回起動チェックとデータ回収の手順
+│   ├── roles.md              # 役割ごとの「やること」
+│   ├── final-week.md         # 完成デモからの仕上げの段取り
 │   ├── presentation-outline.md  # 校内発表の構成案
 │   └── scope-cut-order.md    # 完成が危ういときに削る順序（8/28・9/2の判断基準）
 ├── analysis/
 │   ├── log_to_sqlite.py      # LOG.CSV→SQLite取り込み＋基本集計（標準ライブラリのみ）
+│   ├── heatmap_temp.py       # 時間帯×地点のヒートマップ（pandas + matplotlib）
+│   ├── data_analysispra.py   # 1地点ぶんの折れ線グラフ
+│   ├── data_multibar.py      # 4地点をまとめた折れ線グラフ
 │   ├── README.md             # 分析担当の作業手順
 │   └── sample/LOG.CSV        # 動作確認用ダミーデータ
-├── day0/                     # Git演習（8/18）で各自が作る自己紹介ファイル置き場（演習時に作成）
+├── day0/                     # Git演習（8/18）で各自が作った自己紹介ファイル置き場
 ├── .github/
 │   ├── ISSUE_TEMPLATE/task.md
 │   └── pull_request_template.md
 └── .gitignore
 ```
 
-## はじめかた — どの資料を、いつ読むか
+## はじめかた — どの資料を、いつ読むか（チームメンバー向け）
+
+> ここから下は、制作中のチームメンバーに向けた進め方の資料です。
+> 外から見に来られた方は、上の「わかったこと」「システム構成」と、[docs/data-contract.md](docs/data-contract.md)（通信とデータ形式の取り決め）・[analysis/README.md](analysis/README.md)（集計の手順）・[firmware/](firmware/)（実際のコード）あたりが中身の入口です。
 
 開発環境の準備は、**自宅PC分が事前宿題**です。**学校PC分はDay 0（8/17）の残り時間と8/18（火）・8/20（木）の放課後にチームで導入します**。Day 0当日は役割の合意と機材配布が中心で、Git演習は8/18に行います（実機の動作確認は8/17週の放課後に順次進めます→[docs/tasks-initial.md](docs/tasks-initial.md) のM2）。
 
