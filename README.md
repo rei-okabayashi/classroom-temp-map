@@ -64,9 +64,9 @@ classroom-temp-map/
 │       ├── gateway.ino
 │       └── config.h
 ├── hardware/
-│   └── case/                 # ノードを収める3Dプリント筐体
-│       ├── node_case.scad    # OpenSCADのソース（寸法を変えて出力し直せます）
-│       └── stl/              # 印刷用STL（本体・ふた・センサー台）
+│   └── case/                 # ノードを収める3Dプリント筐体（全高58.5mmの3段積み）
+│       ├── node_case_v3.py   # 設計の元データ（build123d。寸法を変えて出力し直せます）
+│       └── stl/              # 印刷用STL（shell_n1〜n4 ＋ box ＋ lid）
 ├── docs/
 │   ├── data-contract.md      # ノード⇄集約の通信・データ形式の約束事
 │   ├── setup-windows.md      # 開発環境セットアップ・ビルド・書き込み手順（Windows）
